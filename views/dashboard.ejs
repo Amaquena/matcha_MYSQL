@@ -1,0 +1,155 @@
+<%- include('./default/head'); -%>
+<header>
+    <%- include('./default/profileHeader'); -%>
+</header>
+<main>
+    <div class="row py-5 px-4 container-fluid" style="margin-right: 0;">
+        <div class="mx-auto container container-fluid wrapper">
+            <div class="bg-white shadow rounded overflow-hidden container wrapper text-center mx-auto">
+                <div class="px-4 pt-0 pb-4 bg-danger container mx-auto">
+                    <div class="media align-items-end profile-header container wrapper mx-auto">
+                        <div class="profile mr-3 mt-3 wrapper"><img src="<%= pp %>" alt="..." width="100vw" id="pp" class="rounded mb-2 img-thumbnail wrapper"><a href="/users/editProfile" class="btn btn-dark btn-sm btn-block wrapper">Edit profile</a></div>
+                        <div class="media-body text-white text-center mb-auto mt-3">
+                            <h1 class="mt-0 mb-0"><% if (typeof name != 'undefined') {%> <%= name %> <% } %></h1><br>
+                            <p class="small mb-4" id="location"> <i class="fa fa-map-marker mr-2"></i><%= city %> <%= province %> <%= country %></p>
+                            <h4><i class="fa fa-star-o"></i> <%= fame %> <i class="fa fa-star-o"></i></h4>
+                        </div>
+                        <ul class="list-inline mb-0 bg-light p-4 d-flex justify-content-end rounded bg-transparent border border-dark container wrapper">
+                            <li class="list-inline-item wrapper">
+                                <button class="btn wrapper btn-secondary" data-toggle="modal" data-target="#likes">
+                                    <h5 class="font-weight-bold mb-0 d-block"><%= likes %></h5>
+                                    <small style="color: white;"> <i class="fa fa-heart mr-1"></i>Likes</small>
+                                </button>
+                            </li>
+                            <li class="list-inline-item wrapper">
+                                <button class="btn wrapper btn-secondary" data-toggle="modal" data-target="#views">
+                                    <h5 class="font-weight-bold mb-0 d-block"><%= views %></h5>
+                                    <small style="color: white;"> <i class="fa fa-eye mr-1"></i>Views</small>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="container mx-auto">
+                    <br><h4 class="text-danger">Your Info</h4>
+                    <hr class="mt-2 mb-3">
+                    <p class="font-weight-light"><span class="text-danger">Gender</span> : <%= gender%></p>
+                    <p class="font-weight-light"><span class="text-danger">Sexual Preference</span> : <%= sexPref%></p>
+                    <p class="font-weight-light"><span class="text-danger">Age</span> : <%= age%></p>
+                    <p class="font-weight-light"><span class="text-danger">Interests</span> : <%= interest_1 %> <%= interest_2 %> <%= interest_3 %> <%= interest_4 %> <%= interest_5 %></p>
+                    <p class="font-weight-light"><span class="text-danger">Bio</span> : <%= bio%></p>
+                    <p class="font-weight-light"><span class="text-danger">Fame Rating</span> : <%= fame %></p>
+                    <h5 class="font-weight-light text-center text-lg-left mt-4 mb-0">Image Gallery</h5>
+                    <hr class="mt-2 mb-5">
+                    <%- include ('./partials/messages'); -%>
+                    <div class="row text-center text-lg-left">
+                        <div class="col-lg-3 col-md-4 col-6">
+                            <form action="/dashboard" method="post" enctype="multipart/form-data">
+                            <a href="<%= image1 %>" class="d-block mb-4 h-100">
+                                <img class="img-fluid img-thumbnail" src="<%= image1 %>" alt="" style="height: 100%;width: 150%">
+                            </a>
+                            <input type="file" id="image1" name="image1" style="display: none;">
+                            <input class="btn btn-secondary" type="button" value="Change" onclick="document.getElementById('image1').click();" />
+                            <button class="btn btn-danger" type="submit">Save</button>
+                            </form>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-6">
+                            <form action="/dashboard" method="post" enctype="multipart/form-data">
+                            <a href="<%= image2 %>" class="d-block mb-4 h-100">
+                                <img class="img-fluid img-thumbnail" src="<%= image2 %>" alt="" style="height: 100%; width: 150%">
+                            </a>
+                            <input type="file" id="image2" name="image2" style="display: none;">
+                            <input class="btn btn-secondary" type="button" value="Change" onclick="document.getElementById('image2').click();" />
+                            <button class="btn btn-danger" type="submit">Save</button>
+                            </form>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-6">
+                            <form action="/dashboard" method="POST" enctype="multipart/form-data">
+                            <a href="<%= image3 %>" class="d-block mb-4 h-100">
+                                <img class="img-fluid img-thumbnail" src="<%= image3 %>" alt="" style="height: 100%; width: 150%">
+                            </a>
+                            <input type="file" id="image3" name="image3" style="display: none;">
+                            <input class="btn btn-secondary" type="button" value="Change" onclick="document.getElementById('image3').click();" />
+                            <button class="btn btn-danger" type="submit">Save</button>
+                            </form>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-6">
+                            <form action="/dashboard" method="POST" enctype="multipart/form-data">
+                            <a href="<%= image4 %>" class="d-block mb-4 h-100">
+                                <img class="img-fluid img-thumbnail" src="<%= image4 %>" alt="" style="height: 100%; width: 150%">
+                            </a>
+                            <input type="file" id="image4" name="image4" style="display: none;">
+                            <input class="btn btn-secondary" type="button" value="Change" onclick="document.getElementById('image4').click();" />
+                            <button class="btn btn-danger" type="submit">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="modal fade right" id="likes">
+            <div class="modal-dialog bg-danger">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Profile Likers</h2>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <% if (typeof userLikes !== 'undefined') { %> 
+                            <% userLikes.forEach(function (like) { %>
+                        <p> <%= like %> </p>
+                        <% })
+                    } %>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Thanks</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="modal fade right" id="views">
+                <div class="modal-dialog bg-danger">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Profile Viewers</h2>
+                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <% if (typeof userViews !== 'undefined') { %> 
+                                <% userViews.forEach(function (userViews) { %>
+                            <p> <%= userViews.userViewUsername %> </p>
+                            <% })
+                        } %>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Thanks</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</main>
+<script>
+    
+    function showPosition() {
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+            });
+        } else {
+            alert("Sorry, your browser does not support HTML5 geolocation.");
+        }
+    }
+    showPosition();
+
+</script>
+<footer>
+    <%- include('./default/footer'); -%>
+</footer>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>

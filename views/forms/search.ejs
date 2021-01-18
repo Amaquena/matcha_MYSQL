@@ -1,0 +1,280 @@
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    rel="stylesheet"
+    href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
+  />
+  <!-- <link rel="stylesheet" href="/resources/demos/style.css" /> -->
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<br />
+<form action="/suggestedMatchas" method="POST">
+  <div class="container">
+    <input
+      class="form-control"
+      type="text"
+      id="search"
+      name="search"
+      placeholder="Search for a User by Username"
+      autofocus
+    />
+    <br /><button
+      class="btn btn-danger"
+      type="submit"
+      name="sSubmit"
+      value="sSubmit"
+    >
+      Search
+    </button>
+  </div>
+  <hr class="mt-2 mb-3" />
+  <a
+    class="btn btn-danger"
+    data-toggle="collapse"
+    href="#searchUser"
+    role="button"
+    aria-expanded="false"
+    aria-controls="searchUser"
+    id="userSearch"
+    >Click here for Advanced Criteria Search</a
+  >
+  <div class="container-fluid border-danger collapse" id="searchUser">
+    <br />
+    <div class="form-group row">
+      <label for="age_preference" class="col-4 col-form-label"
+        >Age Preference</label
+      >
+      <div class="col-8">
+        <select id="age_preference" name="age_preference" class="custom-select">
+          <option value="age1">18-24</option>
+          <option value="age2">25-31</option>
+          <option value="age3">32-38</option>
+          <option value="age4">39-45</option>
+          <option value="age5">46-52</option>
+          <option value="age6">53-59</option>
+          <option value="age7">60-66</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label class="col-4">Interests</label>
+      <div class="col-8 options">
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_0"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#gaming"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_0" class="custom-control-label">#gaming</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_1"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#coding"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_1" class="custom-control-label">#coding</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_2"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#love"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_2" class="custom-control-label">#love</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_3"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#family"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_3" class="custom-control-label">#family</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_4"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#friends"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_4" class="custom-control-label">#friends</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_5"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#geek"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_5" class="custom-control-label">#geek</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_6"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#exercise"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_6" class="custom-control-label"
+            >#exercise</label
+          >
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_7"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#photography"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_7" class="custom-control-label"
+            >#photography</label
+          >
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_8"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#traveling"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_8" class="custom-control-label"
+            >#traveling</label
+          >
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_9"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#cooking"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_9" class="custom-control-label">#cooking</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_10"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#pets"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_10" class="custom-control-label">#pets</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+          <input
+            name="interests"
+            id="interests_11"
+            type="checkbox"
+            class="custom-control-input"
+            onclick="return maxSel()"
+            value="#sport"
+            aria-describedby="interestsHelpBlock"
+          />
+          <label for="interests_11" class="custom-control-label">#sport</label>
+        </div>
+        <div>
+          <span id="notvalid" style="color: orangered;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label class="col-4"
+        >Popularity rating range between 1 and 5 (out of 5)</label
+      >
+      <div class="col-8 d-flex">
+        <span class="font-weight-bold text-danger mr-2 mt-1" id="slider-range">
+          <input
+            name="fameRange"
+            type="text"
+            id="range"
+            readonly
+            style="border: 0; margin-top: 20px;"
+        /></span>
+      </div>
+    </div>
+    <br />
+    <div class="form-group row">
+      <label for="select" class="col-4 col-form-label">Locate by</label>
+      <div class="col-8">
+        <select id="select" name="loc" class="custom-select">
+          <option value="near">City</option>
+          <option value="far">Province/State</option>
+          <option value="any">Anywhere</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group row">
+      <!-- <input type="checkbox" name="sortby" value="age">  <label for="sortby">age</label>
+        <input type="checkbox" name="sortby" value="loc">  <label for="sortby">loc</label>
+        <input type="checkbox" name="sortby" value="fame">  <label for="sortby">fame</label>
+        <input type="checkbox" name="sortby" value="tags">  <label for="sortby">tags</label>  -->
+      <div class="offset-4 col-8">
+        <button
+          type="submit"
+          name="aSubmit"
+          value="aSubmit"
+          class="btn btn-danger bg-danger"
+        >
+          Find me a match!
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+  $(function () {
+    $("#slider-range").slider({
+      range: true,
+      min: 0,
+      max: 5,
+      slide: function (event, ui) {
+        $("#range").val(ui.values[0] + "-" + ui.values[1]);
+      },
+    });
+    $("#range").val(
+      $("#slider-range").slider("values", 0) +
+        "-" +
+        $("#slider-range").slider("values", 1)
+    );
+  });
+</script>

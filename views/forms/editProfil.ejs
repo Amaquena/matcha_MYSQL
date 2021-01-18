@@ -1,0 +1,266 @@
+<br>
+<h2 class="text-danger text-center">Edit Profile</h2>
+<h4 class="text-center">Make changes to your profile</h4>
+<br>
+<form action="/users/editProfile" enctype="multipart/form-data" method="POST"><br>
+	
+	<div class="form-group">
+		<label for="inputfile">Change your Profile Picture</label>
+			<a href="" class="d-block mb-4 h-100">
+				<img class="img-fluid img-thumbnail" id="ppImage" src="/<%= pp %>" alt="" style="height: 10%;width: 40%">
+			</a>
+		
+		<input onchange="readFile()" type="file" name="profileImage" class="form-control-file" id="inputfile" aria-describedby="fileHelp">
+		<small id="fileHelp" class="form-text text-muted">A profile picture is required to connect with another user</small>
+	</div>
+	<div class="form-group row">
+		<label for="username" class="col-4 col-form-label">Username</label>
+		<div class="col-8">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+						<i class="fa fa-user-circle-o"></i>
+					</div>
+				</div>
+				<input id="usern`ame" name="username" placeholder="Username" type="text" class="form-control" value="<%= name%>">
+			</div>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="firstname" class="col-4 col-form-label">First Name</label>
+		<div class="col-8">
+			<input id="firstname" name="firstname" placeholder="First Name" type="text" class="form-control" value="<%= firstname%>">
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="lastname" class="col-4 col-form-label">Last Name</label>
+		<div class="col-8">
+			<input id="lastname" name="lastname" placeholder="Last Name" type="text" class="form-control" value="<%= lastname%>">
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="email" class="col-4 col-form-label">Email</label>
+		<div class="col-8">
+			<input id="email" name="email" placeholder="Email" type="text" class="form-control" value="<%= email%>">
+		</div>
+	</div>
+	<div class="form-group row">
+		<label class="col-4">Gender</label>
+		<div class="col-8">
+			<div class="custom-control custom-radio custom-control-inline">
+				<input name="gender" id="gender_0" type="radio" class="custom-control-input" <%- (gender === 'male') ? 'checked' : ''; %> value="male">
+				<label for="gender_0" class="custom-control-label">Male</label>
+			</div>
+			<div class="custom-control custom-radio custom-control-inline">
+				<input name="gender" id="gender_1" type="radio" class="custom-control-input" <%- (gender === "female") ? 'checked' : ''; %> value="female">
+				<label for="gender_1" class="custom-control-label">Female</label>
+			</div>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="birthdate" class="col-4 col-form-label">Birthdate</label>
+		<div class="col-8">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+						<i class="fa fa-birthday-cake"></i>
+					</div>
+				</div>
+				<input id="birthdate" name="birthdate" placeholder="DD/MM/YYYY" type="date" value="<%= date.toISOString().substring(0,10) %>" class="form-control">
+			</div>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="age_preference" class="col-4 col-form-label">Age Preference</label>
+		<div class="col-8">
+			<select id="age_preference" name="age_preference" class="custom-select">
+				<option <%- (agePref === 'age1') ? 'selected' : ''; %> value="age1">18-24</option>
+				<option <%- (agePref === 'age2') ? 'selected' : ''; %> value="age2">25-31</option>
+				<option <%- (agePref === 'age3') ? 'selected' : ''; %> value="age3">32-38</option>
+				<option <%- (agePref === 'age4') ? 'selected' : ''; %> value="age4">39-45</option>
+				<option <%- (agePref === 'age5') ? 'selected' : ''; %> value="age5">46-52</option>
+				<option <%- (agePref === 'age6') ? 'selected' : ''; %> value="age6">53-59</option>
+				<option <%- (agePref === 'age7') ? 'selected' : ''; %> value="age7">60-66</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="sex_pref" class="col-4 col-form-label">Sexual Preference</label>
+		<div class="col-8">
+			<select id="sex_pref" name="sex_pref" class="custom-select">
+				<option <%- (sexPref === 'male') ? 'selected' : ''; %> value="male">Men</option>
+				<option <%- (sexPref === 'female') ? 'selected' : ''; %> value="female">Women</option>
+				<option <%- (sexPref === 'both') ? 'selected' : ''; %> value="both">Both</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="bio" class="col-4 col-form-label">Bio</label>
+		<div class="col-8">
+			<textarea id="bio" name="bio" cols="40" rows="5" class="form-control" aria-describedby="bioHelpBlock"><%= bio %></textarea>
+			<span id="bioHelpBlock" class="form-text text-muted">Edit your bio (5 lines or less)</span>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label class="col-4">Interests</label>
+		<div class="col-8">
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_0" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#gaming" aria-describedby="interestsHelpBlock">
+				<label for="interests_0" class="custom-control-label">#gaming</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_1" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#coding" aria-describedby="interestsHelpBlock">
+				<label for="interests_1" class="custom-control-label">#coding</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_2" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#love" aria-describedby="interestsHelpBlock">
+				<label for="interests_2" class="custom-control-label">#love</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_3" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#family" aria-describedby="interestsHelpBlock">
+				<label for="interests_3" class="custom-control-label">#family</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_4" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#friends" aria-describedby="interestsHelpBlock">
+				<label for="interests_4" class="custom-control-label">#friends</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_5" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#geek" aria-describedby="interestsHelpBlock">
+				<label for="interests_5" class="custom-control-label">#geek</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_6" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#exercise" aria-describedby="interestsHelpBlock">
+				<label for="interests_6" class="custom-control-label">#exercise</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_7" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#photography" aria-describedby="interestsHelpBlock">
+				<label for="interests_7" class="custom-control-label">#photography</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_8" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#traveling" aria-describedby="interestsHelpBlock">
+				<label for="interests_8" class="custom-control-label">#traveling</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_9" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#cooking" aria-describedby="interestsHelpBlock">
+				<label for="interests_9" class="custom-control-label">#cooking</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_10" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#pets" aria-describedby="interestsHelpBlock">
+				<label for="interests_10" class="custom-control-label">#pets</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="interests" id="interests_11" type="checkbox" class="custom-control-input" onclick="return maxSel()" value="#sport" aria-describedby="interestsHelpBlock">
+				<label for="interests_11" class="custom-control-label">#sport</label>
+			</div>
+			<div>
+				<span id="notvalid" style="color: orangered"></span>
+			</div>
+		</div>
+	</div>
+	<!-- Update password -->
+	<div class="form-group row">
+		<label class="col-4">Would you like to change your password?</label>
+		<div class="col-3">
+			<a href="updatePassword"> <button id="updatePassword" name="updatePassword" type="button" class="form-control btn-secondary">Change Password</button>
+			</a>
+		</div>
+	</div>
+	<!-- Update password -->
+	<div class="form-group row">
+		<div class="offset-4 col-8">
+			<button name="submit" type="submit" class="btn btn-danger bg-danger">Submit</button><br><br>
+		</div><br>
+		<span style="color: brown;">NOTE: Your location will automatically update when hitting submit.</span><br>
+	</div>
+	<input type="text" name="country" id="country" hidden>
+    <input type="text" name="province" id="province" hidden>
+    <input type="text" name="city" id="city" hidden>
+    <input type="text" name="lat" id="lat" hidden>
+    <input type="text" name="long" id="long" hidden>
+</form>
+<script type="text/javascript">
+	function maxSel(){
+		var box = document.getElementsByName('interests');
+		var i = 0;
+		var count;
+		for (count = 0; count < box.length; count++){
+			if (box[count].checked == true){
+				i = i + 1;
+			}
+		}
+		if (i >= 6){
+			document.getElementById('notvalid').innerHTML = "You can select a maximum of 5 interests"
+			return false;
+		}
+		if (i <= 0){
+			document.getElementById('notvalid').innerHTML = "You must have at least 1 interest"
+			return false;
+		}
+	}
+
+
+		
+		document.addEventListener('DOMContentLoaded', function(){
+
+		var interests = [
+		<%- JSON.stringify(interest_1) %>,
+		<%- JSON.stringify(interest_2) %>,
+		<%- JSON.stringify(interest_3) %>,
+		<%- JSON.stringify(interest_4) %>,
+		<%- JSON.stringify(interest_5) %>
+		];
+		
+		interests.forEach(checkInterestBlocks);
+
+		function checkInterestBlocks(key) {
+			console.log(key);
+			if (document.getElementById("interests_0").value === key)
+				document.getElementById("interests_0").checked = true;
+			if (document.getElementById("interests_1").value === key)
+				document.getElementById("interests_1").checked = true;
+			if (document.getElementById("interests_2").value === key)
+				document.getElementById("interests_2").checked = true;
+			if (document.getElementById("interests_3").value === key)
+				document.getElementById("interests_3").checked = true;
+			if (document.getElementById("interests_4").value === key)
+				document.getElementById("interests_4").checked = true;
+			if (document.getElementById("interests_5").value === key)
+				document.getElementById("interests_5").checked = true;
+			if (document.getElementById("interests_6").value === key)
+				document.getElementById("interests_6").checked = true;
+			if (document.getElementById("interests_7").value === key)
+				document.getElementById("interests_7").checked = true;
+			if (document.getElementById("interests_8").value === key)
+				document.getElementById("interests_8").checked = true;
+			if (document.getElementById("interests_9").value === key)
+				document.getElementById("interests_9").checked = true;
+			if (document.getElementById("interests_10").value === key)
+				document.getElementById("interests_10").checked = true;
+			if (document.getElementById("interests_11").value === key)
+				document.getElementById("interests_11").checked = true;
+		}
+	}, false)
+
+	$.getJSON('https://geolocation-db.com/json/')
+         .done (function(location) {
+            $('#country').val(location.country_name);
+            $('#province').val(location.state);
+            $('#city').val(location.city);
+            $('#lat').val(location.latitude);
+            $('#long').val(location.longitude);
+            $('#ip').val(location.IPv4);
+		 });
+		
+	
+	document.getElementById("inputfile").addEventListener("change", readFile);
+    function readFile() {
+        var file = this.files[0];
+        if (this.files && file) {
+            var fr = new FileReader();
+            fr.addEventListener("load", function (e) {
+                document.getElementById("ppImage").src = e.target.result;
+            });
+            fr.readAsDataURL(file);
+        }
+    }
+</script>

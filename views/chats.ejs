@@ -1,0 +1,108 @@
+<%- include('./default/head'); -%>
+<header>
+    <%- include('./default/profileHeader'); -%>
+</header>
+<main>
+    <%- include ('./partials/messages'); -%>
+
+        <input type="hidden" id="from" value="<%= user.username %>">
+        <input type="hidden" id="chatId" value="<%= chatId %>">
+        
+    <div class="container mx-auto row rounded-lg overflow-hidden shadow">
+        <!-- Users box-->
+        <div class="col-5 px-0 wrapper">
+            <div class="bg-white">
+
+                <div class="bg-gray px-4 py-2 bg-light>
+                    <p class="h5 mb-0 py-1 wrapper2">Recent Chats</p>
+                </div>
+
+                <div class="messages-box">
+                    <!-- bg-danger -->
+                    <div class="list-group rounded-0 wrapper" style="border: #dc3543;">
+
+                        <% if (typeof nonBlockedUsers !== 'undefined') { %>
+                            <% nonBlockedUsers.forEach(function (nonBlockedUser) { %>
+                            <div onclick="window.location='<%= nonBlockedUser.request.url %>'" class="list-group-item list-group-item-action  rounded-0" style="cursor: pointer;">
+                            <div class="media wrapper"><img src="/<%= nonBlockedUser.pp %>" alt="user" width="50" class="rounded-circle"><br><br>
+                                <div class="media-body ml-4 wrapper">
+                                    <div class="d-flex align-items-center justify-content-between mb-1 wrapper">
+                                        <h6 class="mb-0 text-danger wrapper"><%= nonBlockedUser.username %></h6><br>
+                                    </div>
+                                    <% if(nonBlockedUser.loggedIn === true) { %>
+                                        <small class="small font-weight-bold wrapper" style="color: green;">Online</small>
+                                    <% } else { %>
+                                        <small class="small font-weight-bold wrapper">Last Seen: <%= nonBlockedUser.lastSeen %></small>
+                                    <% } %>
+                                    <p class="font-italic text-muted mb-0 text-small wrapper"><%= nonBlockedUser.bio %></p>
+                                </div>
+                            </div>
+                        </div>
+                        <% if (typeof chatId !== 'undefined') {%>
+                            <% if (nonBlockedUser.username.search(chatId.split('-')[0]) === 0) { %>
+                                <input type="hidden" id="to" value="<%= chatId.split('-')[0] %>">
+                                <% } %>
+                                <% if (nonBlockedUser.username.search(chatId.split('-')[1]) === 0) { %>
+                                <input type="hidden" id="to" value="<%= chatId.split('-')[1] %>">
+                
+                        <% }}%>
+                        <% })
+                        } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Chat Box-->
+        <div class="col-7 px-0 wrapper">
+            <div id="msgBox" class="px-4 py-5 chat-box bg-white wrapper">
+                <% if (typeof chatId !== 'undefined') { %>
+                <% if (typeof messages !== 'undefined') { %>
+                    <% messages.forEach(function (msg) { %>
+                        <% if (msg.to === user.username) { %>
+                          <div class="media w-50 mb-3 wrapper">
+                            <div class="media-body ml-3 wrapper">
+                                <div class="bg-light rounded py-2 px-3 mb-2 wrapper">
+                                    <p class="text-small mb-0 text-muted wrapper"><%= msg.message %></p>
+                                </div>
+                                <p class="small text-muted"><%= msg.msgTime %></p>
+                            </div>
+                        </div>
+                        <% } else { %>
+                            <div class="media w-50 ml-auto mb-3">
+                                <div class="media-body bg-white">
+                                    <div class="bg-danger rounded py-2 px-3 mb-2">
+                                        <p class="text-small mb-0 text-white"><%= msg.message %></p>
+                                    </div>
+                                    <p class="small text-muted"><%= msg.msgTime %></p>
+                                </div>
+                            </div>
+                       <% }
+                    })
+                }
+            }%>
+            </div>
+
+            <!-- Typing area -->
+            <!-- <form class="bg-light"> -->
+               <% if (typeof chatId !== 'undefined') { %>
+                <div id="scroll" class="input-group">
+                    <textarea type="text" id="chatBox" name="chatBox" placeholder="Type a message..." aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light"></textarea>
+                    <div class="input-group-append">
+                        <button id="send" type="submit" class="btn" style="background-color: #dc3545; color: white; width: 80px;"> Send</button>
+                    </div>
+                </div><br>
+            <% } %>
+            <!-- </form> -->
+
+        </div>
+    </div>
+    </div>
+</main>
+<script type ="text/javascript"> 
+  var scroll = document.getElementById("scroll");
+  if (scroll)
+      scroll.scrollIntoView();
+</script>
+<footer>
+    <%- include('./default/footer'); -%>
+</footer>

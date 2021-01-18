@@ -1,0 +1,33 @@
+<div class="notify-container">
+  <div class="modal fade right" id="notifications">
+    <div class="modal-dialog bg-danger">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Notifications</h2>
+          <button id="thanks2" type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div id="notify-message" class="modal-body"></div>
+        <div class="modal-footer">
+          <button id="thanks" type="button" class="btn btn-danger" data-dismiss="modal">
+            Thanks
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <button
+        id="noti_btn"
+        type="button"
+        class="btn btn-danger"
+        data-toggle="modal"
+        data-target="#notifications"
+      >
+        <i class="fa fa-bell-o mr-1"></i> Notifications</button
+      ><span class="badge"></span>
+    </div>
+  </div>
+</div>

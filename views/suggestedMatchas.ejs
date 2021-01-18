@@ -1,0 +1,206 @@
+<%- include('./default/head'); -%>
+<header>
+	<%- include('./default/profileHeader'); -%>
+</header>
+<main>
+	<%- include('./partials/messages'); -%>
+	<%- include('./forms/search') -%>
+	<br><h3 class="text-center text-danger">Suggested Matcha's</h3><br>
+	<div class="form-group row">
+		<label class="col-4 ml-5">Sort by</label>
+		<div class="col-4 options">
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="sortby" id="age" type="checkbox" class="custom-control-input"value="age" aria-describedby="interestsHelpBlock">
+				<label for="age" class="custom-control-label">Age</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="sortby" id="loc" type="checkbox" class="custom-control-input" value="loc" aria-describedby="interestsHelpBlock">
+				<label for="loc" class="custom-control-label">Location</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="sortby" id="fame" type="checkbox" class="custom-control-input" value="fame" aria-describedby="interestsHelpBlock">
+				<label for="fame" class="custom-control-label">Fame</label>
+			</div>
+			<div class="custom-control custom-checkbox custom-control-inline">
+				<input name="sortby" id="tags" type="checkbox" class="custom-control-input" value="tags" aria-describedby="interestsHelpBlock">
+				<label for="tags" class="custom-control-label">Tags</label>
+			</div>
+		</div>
+</div>
+	<div class="container table-responsive">
+		<table class="table table-hover user-wrap">
+			<% var userCounter = 0; %>
+			<% if (typeof users !== 'undefined') { %> 
+				<% users.forEach(function (user) { %>
+					<tr class="tr<%= userCounter %>" onclick="window.location='<%= user.request.url %>'">
+							<td class="image">
+							<div class="col-lg-3 col-md-4 col-6">
+								<img id="img<%= userCounter %>" src="<%= user.profileImage %>" alt="" style="height: 100%; width: 150%">
+							</div>
+						</td>
+						<td class="product text-left"><strong id="userDetails<%= userCounter %>"><%= user.firstname %> <%= user.lastname %></strong><br><p id="username<%= userCounter %>"><%= user.username %></p></td>
+						<td class="rate text-right"><span id="userFame<%= userCounter %>"><%= user.fame %></span><br>Popularity</td>
+					</tr>
+					<% userCounter++; %>
+				<% })
+				} %>
+			</table>
+	</div>
+</main>
+<script>
+	var userCounter;
+	var users;
+	var arrayOfUsers = [];
+	var unsortedArrayOfUsers = [];
+	var fame = 0;
+	var userLat;
+	var userLong;
+	var age = 0;
+	var tags = 0;
+	var loc = 0;
+	var sort = false;
+
+	document.addEventListener('DOMContentLoaded', function(){
+		userCounter = <%- JSON.stringify(userCounter) %>;
+		users = <%- JSON.stringify(users) %>;
+		userLat = <%- userLat %>;
+		userLong = <%- userLong %>;
+		userInterests = <%- userInterests %>;
+		if (typeof users !== 'undefined') { 
+			users.forEach(function (user) {
+				arrayOfUsers.push(user);
+				unsortedArrayOfUsers.push(user);
+		 	})
+		}
+		$('input[type="checkbox"][name="sortby"]').click(function() {
+			$.each($("input[value='age']:checked"), function(){
+				age = 1;
+				sort = true;
+				console.log("age")
+			});
+			$.each($("input[value='fame']:checked"), function(){
+				fame = 1;
+				sort = true;
+				console.log("fame")
+			});
+			$.each($("input[value='loc']:checked"), function(){
+				loc = 1;
+				sort = true;
+				console.log("loc")
+			});
+			$.each($("input[value='tags']:checked"), function(){
+				tags = 1;
+				sort = true;
+				console.log("tags")
+			});
+			if (sortUsers(sort, age, fame, loc, tags)) {
+				sort = false;
+				fame = 0;
+				age = 0;
+				loc = 0;
+				tags = 0;
+			}
+		});					
+	}, false)
+
+	function sortUsers(sort, age, fame, loc, tags) {
+		console.log(sort);
+		if (sort){
+			arrayOfUsers.sort((a, b) => {
+				if (age == 1) {
+					return (a.age - b.age);
+				}
+				if (fame == 1) {
+					return (b.fame - a.fame);
+				}
+				if (loc == 1) {
+					var first = distance(userLat, userLong, b.lat, b.long, "K");
+					var second = distance(userLat, userLong, a.lat, a.long, "K");
+
+					if (first < second) {
+						return 1;
+					} else { 
+						return -1;
+					}
+				}
+				if (tags == 1) {
+					var first = compareInterests(userInterests, a);
+					var second = compareInterests(userInterests, b);
+					
+					if (first < second) {
+						return 1;
+					} else {
+						return -1;
+					}
+				}
+			});
+			output(arrayOfUsers);
+			console.log(arrayOfUsers);
+		}
+		return 1;
+	}
+
+	function distance(lat1, lon1, lat2, lon2, unit) {
+	if ((lat1 == lat2) && (lon1 == lon2)) {
+		return 0;
+	}
+	else {
+		var radlat1 = Math.PI * lat1/180;
+		var radlat2 = Math.PI * lat2/180;
+		var theta = lon1-lon2;
+		var radtheta = Math.PI * theta/180;
+		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+		if (dist > 1) {
+			dist = 1;
+		}
+		dist = Math.acos(dist);
+		dist = dist * 180/Math.PI;
+		dist = dist * 60 * 1.1515;
+		if (unit=="K") { dist = dist * 1.609344 }
+		if (unit=="N") { dist = dist * 0.8684 }
+		return dist;
+	}
+}
+	
+	function compareInterests(userInterests, matchedUser) {
+		var userInterestsArray = [];
+		var matchedUsersInterestsArray = [];
+		var count = 0;
+
+		userInterestsArray.push(userInterests.first);
+		userInterestsArray.push(userInterests.second);
+		userInterestsArray.push(userInterests.third);
+		userInterestsArray.push(userInterests.fourth);
+		userInterestsArray.push(userInterests.fifth);
+		
+		matchedUsersInterestsArray.push(matchedUser.interests.first);
+		matchedUsersInterestsArray.push(matchedUser.interests.second);
+		matchedUsersInterestsArray.push(matchedUser.interests.third);
+		matchedUsersInterestsArray.push(matchedUser.interests.fourth);
+		matchedUsersInterestsArray.push(matchedUser.interests.fifth);
+
+		for(let i = 0; i < userInterestsArray.length; i++) { 
+		  for(let j = 0; j < matchedUsersInterestsArray.length; j++) {
+			  if (userInterestsArray[i] === matchedUsersInterestsArray[j])
+			  count++;
+		  }
+		}
+		return count;
+	}
+	
+	function output(arrayOfUsers) {
+		$(".user-wrap > tbody > tr").fadeOut().promise().then(() => {
+		for (var i = 0; i < arrayOfUsers.length; i++) {
+				$(".user-wrap > tbody > tr.tr" + i).attr("onclick", "window.location='" + arrayOfUsers[i].request.url + "'")
+				$("#img" + i).attr("src", arrayOfUsers[i].profileImage);
+				$("#userDetails" + i).text(arrayOfUsers[i].firstname + " " + arrayOfUsers[i].lastname);
+				$("#username" + i).text(arrayOfUsers[i].username);
+				$("#userFame" + i).text(arrayOfUsers[i].fame);
+				$(".user-wrap > tbody > tr").fadeIn();
+			}
+		});
+	}
+</script>
+<footer>
+	<%- include('./default/footer'); -%>
+</footer>
