@@ -65,7 +65,13 @@
 		users = <%- JSON.stringify(users) %>;
 		userLat = <%- userLat %>;
 		userLong = <%- userLong %>;
-		userInterests = <%- userInterests %>;
+		var userInterests = [
+		<%- JSON.stringify(userInterest_1) %>,
+		<%- JSON.stringify(userInterest_2) %>,
+		<%- JSON.stringify(userInterest_3) %>,
+		<%- JSON.stringify(userInterest_4) %>,
+		<%- JSON.stringify(userInterest_5) %>
+		];
 		if (typeof users !== 'undefined') { 
 			users.forEach(function (user) {
 				arrayOfUsers.push(user);

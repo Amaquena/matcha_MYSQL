@@ -99,7 +99,7 @@
                     <div class="modal-body">
                         <% if (typeof userLikes !== 'undefined') { %> 
                             <% userLikes.forEach(function (like) { %>
-                        <p> <%= like %> </p>
+                        <p> <%= like.replace(/['"]+/g, '') %> </p>
                         <% })
                     } %>
                     </div>

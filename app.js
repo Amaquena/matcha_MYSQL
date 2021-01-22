@@ -40,6 +40,8 @@ conn.connect(error => {
 	tableCreation.createUserTable(conn);
 	tableCreation.createTokenTable(conn);
 	tableCreation.createViewsTable(conn);
+	tableCreation.createLikesTable(conn);
+	tableCreation.createChatsTable(conn);
   });
 
 // Connect to Mongo

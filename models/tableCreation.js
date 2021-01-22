@@ -1,5 +1,3 @@
-// const conn = require('./config/keys').MYSQL_CONNECTION;
-
 let createUserTable = `CREATE TABLE IF NOT EXISTS users (
 	id int primary key auto_increment,
 	firstname varchar(255) NOT NULL,
@@ -37,6 +35,9 @@ let createUserTable = `CREATE TABLE IF NOT EXISTS users (
 	lat varchar(255),
 	longitude varchar(255),
 	gender2 TINYTEXT,
+	likedby MEDIUMTEXT NOT NULL,
+	blocked MEDIUMTEXT NOT NULL,
+	viewedby MEDIUMTEXT NOT NULL,
 	loggedIn boolean,
 	lastSeen TINYTEXT
 );`;
@@ -54,7 +55,6 @@ let createTokenTable = `CREATE TABLE IF NOT EXISTS tokens (
 	createdAt DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	userId int NOT NULL
 	);`;
-// FOREIGN KEY (userId) REFERENCES users(id)
 
 exports.createTokenTable = (conn) => {
 	conn.query(createTokenTable, (err) => {
@@ -77,12 +77,34 @@ exports.createViewsTable = (conn) => {
 	});
 };
 
-// conn.query(`CREATE TABLE IF NOT EXISTS likes;`, (err) => {
-// 	if (err) throw err;
-// 	console.log("Likes table successfully created.");
-// });
+let createLikesTable = `CREATE TABLE IF NOT EXISTS likes (
+	id int primary key auto_increment,
+	userId int NOT NULL,
+	likedId int NOT NULL,
+	user_username varchar(255),
+	liked_username varchar(255)
+);`;
 
-// conn.query(`CREATE TABLE IF NOT EXISTS chats;`, (err) => {
-// 	if (err) throw err;
-// 	console.log("Chats table successfully created.");
-// });
+exports.createLikesTable = (conn) => {
+	conn.query(createLikesTable, (err) => {
+		if (err) throw err;
+		console.log("Likes table successfully created.");
+	});
+};
+
+let createChatsTable = `CREATE TABLE IF NOT EXISTS chats (
+	id int primary key auto_increment,
+	reciever varChar(255),
+	sender varchar(255),
+	msgTime varchar(255),
+	message TEXT,
+	chatId varchar(255),
+	time DATETIME DEFAULT CURRENT_TIMESTAMP
+);`;
+
+exports.createChatsTable = (conn) => {
+	conn.query(createChatsTable, (err) => {
+		if (err) throw err;
+		console.log("Chats table successfully created.");
+	});
+};

@@ -27,104 +27,105 @@ router.get("/profiles/:id", ensureAuthenticated, (req, res, next) => {
 	const id = req.params.id;
 	let visitor = false;
 	let liked;
-	User.findOne({ _id: id }).then((userInfo) => {
-		if (userInfo) {
+	let username;
+
+	conn.query("SELECT * FROM users WHERE id=?", [id], (err, rows) => {
+		if (rows.length > 0) {
 			let count = 0;
 			let count2 = 0;
-			while (req.user.likedby[count]) {
-				if (req.user.likedby[count] == userInfo.username) {
+			let likedby = JSON.stringify(req.user.likedby).split(",");
+
+			while (likedby[count]) {
+				if (likedby[count] == rows[0].username) {
 					count2++;
 					break;
 				}
 				count++;
 			}
 			if (count2 == 0) username = "undefined";
-			if (count2 == 1) username = userInfo.username;
+			if (count2 == 1) username = rows[0].username;
 		}
-		Likes.findOne({ _userId: req.user.id, likedId: id })
-			.exec()
-			.then((doc) => {
-				if (doc) {
-					liked = "liked";
-				} else {
-					liked = "like";
-				}
-			})
-			.catch((err) => {
-				console.log(err);
-				res.end();
-			});
 
-		User.findById(id)
-			.exec()
-			.then((docs) => {
-				if (!docs) {
+		let likesSql = "SELECT * FROM likes WHERE userId=? AND likedId=?";
+		let likesPost = [req.user.id, id];
+		conn.query(likesSql, likesPost, (err, likesRows) => {
+			if (err) throw err;
+			if (likesRows.length > 0) {
+				liked = "liked";
+			} else {
+				liked = "like";
+			}
+
+			conn.query("SELECT * FROM users WHERE id=?", [id], (err, docs) => {
+				if (docs.length == 0) {
 					console.log("There was a weird error");
 					res.end();
 				} else {
-					Views.findOne(
-						{ $and: [{ _userId: req.user.id }, { viewedId: id }] },
-						(err, doc) => {
-							if (err) throw err;
+					let viewsSql = "SELECT * FROM views WHERE userId=? AND viewedId=?";
+					let viewsPost = [req.user.id, id];
 
-							if (!doc) {
-								visitor = true;
+					conn.query(viewsSql, viewsPost, (err, viewsResult) => {
+						if (err) throw err;
+						if (viewsResult.length == 0) {
+							visitor = true;
 
-								const newView = new Views({
-									_userId: req.user.id,
-									viewedId: id,
-									userViewUsername: req.user.username,
-								});
+							viewsSql = "INSERT INTO views SET ?";
+							viewsPost = {
+								userId: req.user.id,
+								viewedId: id,
+								userViewUsername: req.user.username,
+							};
+							conn.query(viewsSql, viewsPost, (err) => {
+								if (err) throw err;
+							});
 
-								newView.save((err) => {
-									if (err) throw err;
-								});
-							}
 							if (visitor) {
-								let query = { $inc: { views: 1 } };
-								User.findByIdAndUpdate(id, query, { new: true })
-									.exec()
-									.then((doc) => {
-										res.render("profiles", {
-											user: doc,
-											liked: liked,
-											userliked: username,
-											curr_userUsername: req.user.username,
-											curr_userId: req.user.id,
-											userNameTag: req.user.username,
-										});
-										next();
-									})
-									.catch((err) => {
-										console.log("catch err: " + err);
-									});
+								conn.query(
+									"SELECT views FROM users WHERE id=?",
+									[id],
+									(err, userRows) => {
+										let viewCount = userRows[0].views + 1;
+										conn.query(
+											"UPDATE users SET views=?",
+											[viewCount],
+											(err) => {
+												if (err) throw err;
+
+												conn.query(
+													"SELECT * FROM users WHERE id=?",
+													[id],
+													(err, results) => {
+														res.render("profiles", {
+															user: results[0],
+															liked: liked,
+															userliked: username,
+															curr_userUsername: req.user.username,
+															curr_userId: req.user.id,
+															userNameTag: req.user.username,
+														});
+														next();
+													}
+												);
+											}
+										);
+									}
+								);
 							}
+						} else {
+							res.render("profiles", {
+								user: docs[0],
+								liked: liked,
+								userliked: username,
+								curr_userUsername: req.user.username,
+								curr_userId: req.user.id,
+								userNameTag: req.user.username,
+							});
+							res.end();
 						}
-					)
-						.exec()
-						.then(() => {
-							if (!visitor) {
-								if (docs) {
-									res.render("profiles", {
-										user: docs,
-										liked: liked,
-										userliked: username,
-										curr_userUsername: req.user.username,
-										curr_userId: req.user.id,
-										userNameTag: req.user.username,
-									});
-									res.end();
-								}
-							}
-						})
-						.catch((err) => {
-							console.log(err);
-						});
+					});
 				}
-			})
-			.catch((err) => {
-				console.log(err);
 			});
+		});
 	});
 });
 
@@ -203,127 +204,119 @@ router.get(
 );
 
 router.get("/suggestedMatchas", ensureAuthenticated, (req, res) => {
-	User.find({
-		$and: [
-			// change $or back to $and for suggested searches
-			{
-				city: req.user.city,
-			},
-			{
-				$or: [
-					{
-						"interests.first": {
-							$in: [
-								req.user.interests["first"],
-								req.user.interests["second"],
-								req.user.interests["third"],
-								req.user.interests["fourth"],
-								req.user.interests["fifth"],
-							],
-						},
+	let ageMax;
+	let ageMin;
+	switch (req.user.agePref) {
+		case "age1":
+			ageMin = 18;
+			ageMax = 24;
+			break;
+		case "age2":
+			ageMin = 25;
+			ageMax = 31;
+			break;
+		case "age3":
+			ageMin = 32;
+			ageMax = 38;
+			break;
+		case "age4":
+			ageMin = 39;
+			ageMax = 45;
+			break;
+		case "age5":
+			ageMin = 46;
+			ageMax = 52;
+			break;
+		case "age6":
+			ageMin = 53;
+			ageMax = 59;
+			break;
+		case "age7":
+			ageMin = 60;
+			ageMax = 66;
+			break;
+		default:
+			ageMax = 66;
+			ageMin = 18;
+	}
+	let userSql = `SELECT * FROM users WHERE (city = ?) AND
+	(interest_1 IN (?, ?, ?, ?, ?) OR interest_2 IN (?, ?, ?, ?, ?) OR interest_3 IN (?, ?, ?, ?, ?) OR interest_4 IN (?, ?, ?, ?, ?) OR interest_5 IN (?, ?, ?, ?, ?)) AND
+	(gender = ? && gender = "male" OR gender = ? && gender = "female" OR gender2 = ?) AND
+	(fame <= ?) AND
+	(id <> ?) AND
+	(age BETWEEN ? AND ?)
+	ORDER BY fame DESC`;
+	let userPost = [
+		req.user.city,
+		req.user.interest_1,
+		req.user.interest_2,
+		req.user.interest_3,
+		req.user.interest_4,
+		req.user.interest_5,
+		req.user.interest_1,
+		req.user.interest_2,
+		req.user.interest_3,
+		req.user.interest_4,
+		req.user.interest_5,
+		req.user.interest_1,
+		req.user.interest_2,
+		req.user.interest_3,
+		req.user.interest_4,
+		req.user.interest_5,
+		req.user.interest_1,
+		req.user.interest_2,
+		req.user.interest_3,
+		req.user.interest_4,
+		req.user.interest_5,
+		req.user.interest_1,
+		req.user.interest_2,
+		req.user.interest_3,
+		req.user.interest_4,
+		req.user.interest_5,
+		req.user.sexPref,
+		req.user.sexPref,
+		req.user.sexPref,
+		req.user.fame,
+		req.user.id,
+		ageMin,
+		ageMax,
+	];
+	// username NOT IN (${req.user.blocked}) &&
+	conn.query(userSql, userPost, (err, rows) => {
+		if (err) throw err;
+		res.status(200).render("suggestedMatchas", {
+			userNameTag: req.user.username,
+			userLat: req.user.lat,
+			userLong: req.user.longitude,
+			userInterest_1: req.user.interest_1,
+			userInterest_2: req.user.interest_2,
+			userInterest_3: req.user.interest_3,
+			userInterest_4: req.user.interest_4,
+			userInterest_5: req.user.interest_5,
+			users: rows.map((row) => {
+				return {
+					firstname: row.firstname,
+					lastname: row.lastname,
+					username: row.username,
+					fame: row.fame,
+					age: row.age,
+					lat: row.lat,
+					long: row.longitude,
+					interest_1: row.interest_1,
+					interest_2: row.interest_2,
+					interest_3: row.interest_3,
+					interest_4: row.interest_4,
+					interest_5: row.interest_5,
+					profileImage: row.image_1,
+					request: {
+						url: "/profiles/" + row.id,
 					},
-					{
-						"interests.second": {
-							$in: [
-								req.user.interests["first"],
-								req.user.interests["second"],
-								req.user.interests["third"],
-								req.user.interests["fourth"],
-								req.user.interests["fifth"],
-							],
-						},
-					},
-					{
-						"interests.third": {
-							$in: [
-								req.user.interests["first"],
-								req.user.interests["second"],
-								req.user.interests["third"],
-								req.user.interests["fourth"],
-								req.user.interests["fifth"],
-							],
-						},
-					},
-					{
-						"interests.fourth": {
-							$in: [
-								req.user.interests["first"],
-								req.user.interests["second"],
-								req.user.interests["third"],
-								req.user.interests["fourth"],
-								req.user.interests["fifth"],
-							],
-						},
-					},
-					{
-						"interests.fifth": {
-							$in: [
-								req.user.interests["first"],
-								req.user.interests["second"],
-								req.user.interests["third"],
-								req.user.interests["fourth"],
-								req.user.interests["fifth"],
-							],
-						},
-					},
-				],
-			},
-			{
-				$or: [
-					{
-						$and: [
-							{ gender: { $eq: req.user.sexPref } },
-							{ gender: { $eq: "male" } },
-						],
-					},
-					{
-						$and: [
-							{ gender: { $eq: req.user.sexPref } },
-							{ gender: { $eq: "female" } },
-						],
-					},
-					{ gender2: { $eq: req.user.sexPref } },
-				],
-			},
-			{
-				fame: { $lte: parseInt(req.user.fame) },
-			},
-			{ _id: { $ne: req.user.id } },
-			{ username: { $nin: req.user.blocked } },
-			{ agePref: { $eq: req.user.agePref } },
-		],
-	})
-		.sort({ fame: -1 })
-		.select(
-			"firstname lastname username profileImages.image1 fame age lat long interests"
-		)
-		.exec()
-		.then((docs) => {
-			res.status(200).render("suggestedMatchas", {
-				userNameTag: req.user.username,
-				userLat: req.user.lat,
-				userLong: req.user.long,
-				userInterests: req.user.interests,
-				users: docs.map((doc) => {
-					return {
-						firstname: doc.firstname,
-						lastname: doc.lastname,
-						username: doc.username,
-						fame: doc.fame,
-						age: doc.age,
-						lat: doc.lat,
-						long: doc.long,
-						interests: doc.interests,
-						profileImage: doc.profileImages.image1,
-						request: {
-							url: "/profiles/" + doc.id,
-						},
-					};
-				}),
-			});
-		})
-		.catch();
+				};
+			}),
+		});
+	});
 });
+
 // Dashboard
 router.get("/dashboard", ensureAuthenticated, (req, res) => {
 	let totalViews = [];
@@ -340,6 +333,8 @@ router.get("/dashboard", ensureAuthenticated, (req, res) => {
 			if (err) {
 				console.log("could not find user");
 			}
+			let likedby = JSON.stringify(req.user.likedby);
+			let userlikes = likedby.split(",");
 
 			if (userRows.length > 0) {
 				res.render("dashboard", {
@@ -365,13 +360,12 @@ router.get("/dashboard", ensureAuthenticated, (req, res) => {
 					fame: req.user.fame,
 					age: req.user.age,
 					userNameTag: req.user.username,
-					userLikes: req.user.likedby,
+					userLikes: userlikes,
 					userViews: viewRows,
 				});
 			}
 		});
 	});
-
 });
 
 // Index Controller

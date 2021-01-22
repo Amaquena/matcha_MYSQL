@@ -4,7 +4,7 @@ const crypto = require("crypto-extra");
 // const Likes = require("../models/Likes");
 const conn = require("../config/keys").MYSQL_CONNECTION;
 const Chats = require("../models/Chats");
-const { connect } = require("../app");
+// const { connect } = require("../app");
 
 exports.index_dashboard = (req, res, next) => {
 	let uploads = res.locals.upload.fields([
@@ -63,44 +63,65 @@ exports.index_profile = (req, res, next) => {
 	const currUser = req.user;
 
 	if (req.body.like_btn === "like_btn") {
-		User.findById(id, (err, doc) => {
+		conn.query("SELECT * FROM users WHERE id=?", [id], (err, doc) => {
 			if (err) throw err;
 
-			if (doc) {
-				Likes.findOne(
-					{ user_username: currUser.username, liked_username: doc.username },
+			if (doc.length > 0) {
+				let likesPost = [currUser.username, doc[0].username];
+				conn.query(
+					"SELECT * FROM likes WHERE user_username=? AND liked_username=?",
+					likesPost,
 					(err, isLiked) => {
 						if (err) throw err;
 
-						if (isLiked != null) {
+						if (isLiked.length > 0) {
 							res.redirect("/profiles/" + id);
 						} else {
-							doc.likes++;
-							doc.likedby.push(currUser.username);
+							let likedby = [];
+							let blocked = [];
+							let updateLikes = doc[0].likes + 1;
 
-							const index = doc.blocked.indexOf(currUser.username);
-							if (index > -1) {
-								doc.blocked.splice(index, 1);
+							if (doc[0].likedby != null) {
+								likedby = JSON.stringify(doc[0].likedby).split(",");
+							}
+							if (doc[0].blocked != null) {
+								blocked = JSON.stringify(doc[0].blocked).split(",");
 							}
 
-							User.findById(currUser._id, (err, currentUserDoc) => {
+							likedby.push(currUser.username);
+							const index = blocked.indexOf(currUser.username);
+							if (index > -1) {
+								blocked.splice(index, 1);
+							}
+							let likedbyString = likedby.join().replace(/['"]+/g, '');
+							let blockedString = blocked.join().replace(/['"]+/g, '');
+							let userPost = [likedbyString, blockedString, updateLikes, id];
+							conn.query("UPDATE users SET likedby=?, blocked=?, likes=? WHERE id=?", userPost, (err) => {
 								if (err) throw err;
-								const index = currentUserDoc.blocked.indexOf(doc.username);
-								if (index > -1) {
-									currentUserDoc.blocked.splice(index, 1);
-								}
+								
+								conn.query("SELECT blocked FROM users WHERE id=?", [currUser.id], (err, currentUserDoc) => {
+									if (err) throw err;
+									blocked = JSON.stringify(currentUserDoc[0].blocked).split(",");
+									const index = blocked.indexOf(doc[0].username);
+									if (index > -1) {
+										blocked.splice(index, 1);
+									}
+									blockedString = blocked.join();
+									conn.query("UPDATE users SET blocked=? WHERE id=?", [blockedString, currUser.id], (err) => {
+										if (err) throw err;
 
-								const newLike = new Likes({
-									_userId: currUser.id,
-									likedId: id,
-									user_username: currUser.username,
-									liked_username: doc.username,
+										let likesSql = "INSERT INTO likes SET ?";
+										let likesPost = {
+											userId: currUser.id,
+											likedId: id,
+											user_username: currUser.username,
+											liked_username: doc[0].username,};
+										conn.query(likesSql, likesPost, (err) => {
+											if (err) throw err;
+											res.redirect("/profiles/" + id);
+										});
+									});
 								});
-
-								doc.save();
-								currentUserDoc.save();
-								newLike.save();
-								res.redirect("/profiles/" + id);
 							});
 						}
 					}
@@ -112,41 +133,61 @@ exports.index_profile = (req, res, next) => {
 		const currUser = req.user;
 		let blockedUser = false;
 
-		User.findById(id, (err, doc) => {
+		conn.query("SELECT * FROM users WHERE id=?", [id], (err, userRows) => {
 			if (err) throw err;
 
-			for (const i in doc.blocked) {
-				if (doc.blocked.hasOwnProperty(i)) {
+			let blocked = [];
+			let likedby = [];
+			let userLikes;
+
+			if (userRows[0].blocked != null) {
+				blocked = JSON.stringify(userRows[0].blocked).split(",");
+			}
+			for (const i in blocked) {
+				if (blocked.hasOwnProperty(i)) {
 					blockedUser = true;
 				}
 			}
 
 			if (!blockedUser) {
-				if (doc.likes > 0) {
-					doc.likes--;
+				if (userRows[0].likes > 0) {
+					userLikes = userRows[0].likes - 1;
 				}
-				doc.blocked.push(currUser.username);
-				const index = doc.likedby.indexOf(currUser.username);
+				blocked.push(currUser.username);
+
+				if (userRows[0].likedby != null) {
+					likedby = JSON.stringify(userRows[0].likedby).split(",");
+				}
+				const index = likedby.indexOf(currUser.username);
 				if (index > -1) {
-					doc.likedby.splice(index, 1);
+					likedby.splice(index, 1);
 				}
 
-				doc.save();
-				User.findByIdAndUpdate(
-					currUser.id,
-					{ $push: { blocked: doc.username } },
-					(err) => {
-						if (err) throw err;
-					}
-				);
+				let likedbyString = likedby.join().replace(/['"]+/g, '');
+				let blockedString = blocked.join().replace(/['"]+/g, '');
+				let userPost = [likedbyString, blockedString, userLikes, id];
+				conn.query("UPDATE users SET likedby=?, blocked=?, likes=? WHERE id=?", userPost, (err) => {
+					if (err) throw err;
 
-				Likes.findOneAndDelete(
-					{ user_username: currUser.username, liked_username: doc.username },
-					(err) => {
-						if (err) throw err;
-						res.redirect("/profiles/" + id);
-					}
-				);
+					conn.query("SELECT * FROM users WHERE id=?", [currUser.id], (err, rows) => {
+						blocked = [];
+						if (rows[0].blocked != null) {
+							blocked = JSON.stringify(rows[0].blocked).split(",");
+						}
+						blocked.push(userRows[0].username);
+						blockedString = blocked.join().replace(/['"]+/g, '');
+
+						userPost = [blockedString, currUser.id];
+						conn.query("UPDATE users SET blocked=? WHERE id=?", userPost, (err) => {
+							if (err) throw err;
+
+							conn.query("DELETE FROM likes WHERE user_username=? AND liked_username=?", [currUser.username, userRows[0].username], (err) => {
+								if (err) throw err;
+								res.redirect("/profiles/" + id);
+							});
+						});
+					});
+				});
 			} else {
 				res.redirect("/profiles/" + id);
 			}
@@ -158,265 +199,219 @@ exports.index_advancedMathas = (req, res) => {
 	const search = req.body.search;
 
 	if (req.body.sSubmit === "sSubmit") {
-		User.find({
-			$and: [{ username: search }, { username: { $ne: req.user.username } }],
-		})
-			.exec()
-			.then((docs) => {
-				res.render("suggestedMatchas", {
-					userNameTag: req.user.username,
-					userLat: req.user.lat,
-					userLong: req.user.long,
-					userInterests: req.user.interests,
-					users: docs.map((doc) => {
-						return {
-							firstname: doc.firstname,
-							lastname: doc.lastname,
-							username: doc.username,
-							fame: doc.fame,
-							age: doc.age,
-							lat: doc.lat,
-							long: doc.long,
-							interests: doc.interests,
-							profileImage: doc.profileImages.image1,
-							request: {
-								url: "/profiles/" + doc.id,
-							},
-						};
-					}),
-				});
+		let userSql = "SELECT * FROM users WHERE username=? AND username <> ?";
+		let userPost = [search, req.user.username];
+
+		conn.query(userSql, userPost, (err, rows) => {
+			if (err) throw err;
+			res.status(200).render("suggestedMatchas", {
+				userNameTag: req.user.username,
+				userLat: req.user.lat,
+				userLong: req.user.longitude,
+				userInterest_1: req.user.interest_1,
+				userInterest_2: req.user.interest_2,
+				userInterest_3: req.user.interest_3,
+				userInterest_4: req.user.interest_4,
+				userInterest_5: req.user.interest_5,
+				users: rows.map((row) => {
+					return {
+						firstname: row.firstname,
+						lastname: row.lastname,
+						username: row.username,
+						fame: row.fame,
+						age: row.age,
+						lat: row.lat,
+						long: row.longitude,
+						interest_1: row.interest_1,
+						interest_2: row.interest_2,
+						interest_3: row.interest_3,
+						interest_4: row.interest_4,
+						interest_5: row.interest_5,
+						profileImage: row.image_1,
+						request: {
+							url: "/profiles/" + row.id,
+						},
+					};
+				}),
 			});
+		});
 	} else if (req.body.aSubmit === "aSubmit") {
 		const agePref = req.body.age_preference;
 		const interests = req.body.interests;
 		const fameRange = req.body.fameRange;
 		const loc = req.body.loc;
 
-		let interestsQuery;
-		let ageQuery;
-		let fameQuery;
-		let locQuery;
-		let sexPrefQuery;
-
-		sexPrefQuery = {
-			$or: [
-				{
-					$and: [
-						{ gender: { $eq: req.user.sexPref } },
-						{ gender: { $eq: "male" } },
-					],
-				},
-				{
-					$and: [
-						{ gender: { $eq: req.user.sexPref } },
-						{ gender: { $eq: "female" } },
-					],
-				},
-				{ gender2: { $eq: req.user.sexPref } },
-			],
-		};
+		let ageMin;
+		let ageMax;
+		let userSql = "SELECT * FROM users WHERE";
+		let userPost = "";
 
 		switch (agePref) {
 			case "age1":
-				ageQuery = { age: { $gte: 18, $lte: 24 } };
-				selectedage = "age1";
+				ageMin = 18;
+				ageMax = 24;
 				break;
 			case "age2":
-				ageQuery = { age: { $gte: 25, $lte: 31 } };
-				selectedage = "age2";
+				ageMin = 25;
+				ageMax = 31;
 				break;
 			case "age3":
-				ageQuery = { age: { $gte: 32, $lte: 38 } };
-				selectedage = "age3";
+				ageMin = 32;
+				ageMax = 38;
 				break;
 			case "age4":
-				ageQuery = { age: { $gte: 39, $lte: 45 } };
-				selectedage = "age4";
+				ageMin = 39;
+				ageMax = 45;
 				break;
 			case "age5":
-				ageQuery = { age: { $gte: 46, $lte: 52 } };
-				selectedage = "age5";
+				ageMin = 46;
+				ageMax = 52;
 				break;
 			case "age6":
-				ageQuery = { age: { $gte: 53, $lte: 59 } };
-				selectedage = "age6";
+				ageMin = 53;
+				ageMax = 59;
 				break;
 			case "age7":
-				ageQuery = { age: { $gte: 60, $lte: 66 } };
-				selectedage = "age7";
+				ageMin = 60;
+				ageMax = 66;
 				break;
 			default:
-				ageQuery = {};
+				ageMax = 66;
+				ageMin = 18;
 		}
+		userSql += " (age BETWEEN ? AND ?) AND";
+		userPost = [ageMin, ageMax];
+
+		let fameRangeArray = fameRange.split("-");
+		userSql += " (fame BETWEEN ? AND ?) AND";
+		userPost = [ageMin, ageMax, fameRangeArray[0], fameRangeArray[1]];
+
+		let location;
+		switch (loc) {
+			case "near":
+				location = req.user.city;
+				userSql += " (city = ?) AND";
+				break;
+			case "far":
+				location = req.user.province;
+				userSql += " (province = ?) AND";
+				break;
+			case "any":
+				location = req.user.country;
+				userSql += " (country = ?) AND";
+				break;
+			default:
+				location = null;
+		}
+		userPost = [ageMin, ageMax, fameRangeArray[0], fameRangeArray[1], location];
+
+		userSql +=
+			" (gender = ? && gender = 'male' OR gender = ? && gender = 'female' OR gender2 = ?)";
+		userPost = [
+			ageMin,
+			ageMax,
+			fameRangeArray[0],
+			fameRangeArray[1],
+			location,
+			req.user.sexPref,
+			req.user.sexPref,
+			req.user.sexPref,
+		];
 
 		if (typeof interests !== "undefined") {
 			if (Array.isArray(interests)) {
-				interestsQuery = {
-					$or: [
-						{
-							"interests.first": {
-								$in: [
-									interests[0],
-									interests[1],
-									interests[2],
-									interests[3],
-									interests[4],
-								],
-							},
-						},
-						{
-							"interests.second": {
-								$in: [
-									interests[0],
-									interests[1],
-									interests[2],
-									interests[3],
-									interests[4],
-								],
-							},
-						},
-						{
-							"interests.third": {
-								$in: [
-									interests[0],
-									interests[1],
-									interests[2],
-									interests[3],
-									interests[4],
-								],
-							},
-						},
-						{
-							"interests.fourth": {
-								$in: [
-									interests[0],
-									interests[1],
-									interests[2],
-									interests[3],
-									interests[4],
-								],
-							},
-						},
-						{
-							"interests.fifth": {
-								$in: [
-									interests[0],
-									interests[1],
-									interests[2],
-									interests[3],
-									interests[4],
-								],
-							},
-						},
-					],
-				};
+				userSql +=
+					" AND (interest_1 IN (?, ?, ?, ?, ?) OR interest_2 IN (?, ?, ?, ?, ?) OR interest_3 IN (?, ?, ?, ?, ?) OR interest_4 IN (?, ?, ?, ?, ?) OR interest_5 IN (?, ?, ?, ?, ?))";
+				userPost = [
+					ageMin,
+					ageMax,
+					fameRangeArray[0],
+					fameRangeArray[1],
+					location,
+					req.user.sexPref,
+					req.user.sexPref,
+					req.user.sexPref,
+					interests[0],
+					interests[1],
+					interests[2],
+					interests[3],
+					interests[4],
+					interests[0],
+					interests[1],
+					interests[2],
+					interests[3],
+					interests[4],
+					interests[0],
+					interests[1],
+					interests[2],
+					interests[3],
+					interests[4],
+					interests[0],
+					interests[1],
+					interests[2],
+					interests[3],
+					interests[4],
+					interests[0],
+					interests[1],
+					interests[2],
+					interests[3],
+					interests[4],
+				];
 			} else {
-				interestsQuery = {
-					$or: [
-						{
-							"interests.first": { $eq: interests },
-						},
-						{
-							"interests.second": { $eq: interests },
-						},
-						{
-							"interests.third": { $eq: interests },
-						},
-						{
-							"interests.fourth": { $eq: interests },
-						},
-						{
-							"interests.fifth": { $eq: interests },
-						},
-					],
-				};
+				userSql +=
+					" AND (interest_1 = ?) OR (interest_2 = ?) OR (interest_3 = ?) OR (interest_4 = ?) OR (interest_5 = ?)";
+				userPost = [
+					ageMin,
+					ageMax,
+					fameRangeArray[0],
+					fameRangeArray[1],
+					location,
+					req.user.sexPref,
+					req.user.sexPref,
+					req.user.sexPref,
+					interests,
+					interests,
+					interests,
+					interests,
+					interests,
+				];
 			}
 		} else {
-			interestsQuery = {};
+			// Leave it empty becuase none was selected.
 		}
 
-		let fameRangeArray = fameRange.split("-");
-		fameQuery = {
-			fame: {
-				$gte: parseInt(fameRangeArray[0]),
-				$lte: parseInt(fameRangeArray[1]),
-			},
-		};
-
-		switch (loc) {
-			case "near":
-				locQuery = { city: req.user.city };
-				break;
-			case "far":
-				locQuery = { province: req.user.province };
-				break;
-			case "any":
-				locQuery = {};
-				break;
-			default:
-				locQuery = {};
-		}
-		// gets the intresets that you are into and will filter it this way with your intresets been top
-		// let count = 0;;
-		// let userFirstChoice = 0;
-		// let userSecondChoice = 0;
-		// let userThirdChoice = 0;
-		// let userFourthChoice = 0;
-		// let userFirthChoice = 0;
-		// let userIntresets = req.user.interests;
-		// while (interests[count])
-		// {
-		//   if (interests !== "undefined")
-		//   {
-		//     if (interests[count] == userIntresets.first)
-		//     userFirstChoice++;
-		//     else if (interests[count] == userIntresets.second)
-		//     userSecondChoice++;
-		//     else if (interests[count] == userIntresets.third)
-		//     userThirdChoice++;
-		//     else if (interests[count] == userIntresets.fourth)
-		//     userFourthChoice++;
-		//     else if (interests[count] == userIntresets.fifth)
-		//     userFirthChoice++;
-		//   }
-		//   count++;
-		// }
-		User.find({
-			$and: [
-				// ageQuery,
-				interestsQuery,
-				fameQuery,
-				locQuery,
-				sexPrefQuery,
-				{ _id: { $ne: req.user.id } },
-				{ username: { $nin: req.user.blocked } },
-				{ agePref: { $eq: selectedage } },
-			],
-		})
-			.exec()
-			.then((docs) => {
-				res.render("suggestedMatchas", {
-					userNameTag: req.user.username,
-					userLat: req.user.lat,
-					userLong: req.user.long,
-					userInterests: req.user.interests,
-					users: docs.map((doc) => {
-						return {
-							firstname: doc.firstname,
-							lastname: doc.lastname,
-							username: doc.username,
-							fame: doc.fame,
-							age: doc.age,
-							lat: doc.lat,
-							long: doc.long,
-							interests: doc.interests,
-							profileImage: doc.profileImages.image1,
-							request: {
-								url: "/profiles/" + doc.id,
-							},
-						};
-					}),
-				});
+		conn.query(userSql, userPost, (err, rows) => {
+			if (err) throw err;
+			res.status(200).render("suggestedMatchas", {
+				userNameTag: req.user.username,
+				userLat: req.user.lat,
+				userLong: req.user.longitude,
+				userInterest_1: req.user.interest_1,
+				userInterest_2: req.user.interest_2,
+				userInterest_3: req.user.interest_3,
+				userInterest_4: req.user.interest_4,
+				userInterest_5: req.user.interest_5,
+				users: rows.map((row) => {
+					return {
+						firstname: row.firstname,
+						lastname: row.lastname,
+						username: row.username,
+						fame: row.fame,
+						age: row.age,
+						lat: row.lat,
+						long: row.longitude,
+						interest_1: row.interest_1,
+						interest_2: row.interest_2,
+						interest_3: row.interest_3,
+						interest_4: row.interest_4,
+						interest_5: row.interest_5,
+						profileImage: row.image_1,
+						request: {
+							url: "/profiles/" + row.id,
+						},
+					};
+				}),
 			});
+		});
 	}
 };

@@ -182,15 +182,12 @@ exports.user_login = (req, res, next) => {
 				return console.log(err);
 			}
 
+			let num;
+			let fame = 0;
 			if (user.views !== 0 || user.likes !== 0) {
-				let num = (user.likes / user.views) * 5;
-				let fame = Math.round(num * 10) / 10;
+				num = (user.likes / user.views) * 5;
+				fame = Math.round(num * 10) / 10;
 
-				let userSql = "UPDATE user SET fame=?, loggedIn=?";
-				let userPost = [fame, true];
-				conn.query(userSql, userPost, (err, rows) => {
-					if (err) return console.log(err);
-				});
 				// User.findByIdAndUpdate(
 				// 	user.id,
 				// 	{ $set: { fame: fame, loggedIn: true } },
@@ -200,8 +197,12 @@ exports.user_login = (req, res, next) => {
 				// 	}
 				// );
 			}
-
-			return res.redirect("/dashboard");
+			let userSql = "UPDATE users SET fame=?, loggedIn=? WHERE id=?";
+			let userPost = [fame, true, req.user.id];
+			conn.query(userSql, userPost, (err) => {
+				if (err) return console.log(err);
+				return res.redirect("/dashboard");
+			});
 		});
 	})(req, res, next);
 };
@@ -593,7 +594,6 @@ exports.user_updatePwd = (req, res) => {
 							userNameTag: req.user.username,
 						});
 					});
-
 				});
 			});
 		});
@@ -651,6 +651,7 @@ exports.user_extendedProfile = (req, res) => {
 							gender2: req.body.gender2,
 							age: age,
 							extendedProf: true,
+							loggedIn: true
 						};
 					} else {
 						userPost = {
@@ -677,9 +678,10 @@ exports.user_extendedProfile = (req, res) => {
 							gender2: req.body.gender2,
 							age: age,
 							extendedProf: true,
+							loggedIn: true
 						};
 					}
-					let userSql = "UPDATE users SET ?";
+					let userSql = `UPDATE users SET ? WHERE id=${req.user.id}`;
 
 					conn.query(userSql, userPost, (err) => {
 						if (err) {
@@ -697,7 +699,7 @@ exports.user_editProfile = (req, res, next) => {
 	let uploads = res.locals.upload;
 	var val;
 
-	uploads(req, res, async function (err) {
+	uploads(req, res, function (err) {
 		if (err instanceof multer.MulterError) {
 			req.flash("error_msg", err);
 			return res.status(500).redirect("/users/editProfile");
@@ -713,42 +715,48 @@ exports.user_editProfile = (req, res, next) => {
 
 		let userPost = null;
 		if (req.file) {
-			userPost = {
-				username: req.body.username,
-				firstname: req.body.firstname,
-				lastname: req.body.lastname,
-				email: req.body.email,
-				gender: req.body.gender,
-				dob: req.body.birthdate,
-				agePref: req.body.age_preference,
-				sexPref: req.body.sex_pref,
-				age: age,
-				bio: req.body.bio,
-				image_1: req.file.filename,
-				country: req.body.country,
-				province: req.body.province,
-				city: req.body.city,
-				lat: req.body.lat,
-				longitude: req.body.long,
-			};
+			userPost = [
+				{
+					username: req.body.username,
+					firstname: req.body.firstname,
+					lastname: req.body.lastname,
+					email: req.body.email,
+					gender: req.body.gender,
+					dob: req.body.birthdate,
+					agePref: req.body.age_preference,
+					sexPref: req.body.sex_pref,
+					age: age,
+					bio: req.body.bio,
+					image_1: req.file.filename,
+					country: req.body.country,
+					province: req.body.province,
+					city: req.body.city,
+					lat: req.body.lat,
+					longitude: req.body.long,
+				},
+				req.user.id,
+			];
 		} else if (!req.file) {
-			userPost = {
-				username: req.body.username,
-				firstname: req.body.firstname,
-				lastname: req.body.lastname,
-				email: req.body.email,
-				gender: req.body.gender,
-				dob: req.body.birthdate,
-				agePref: req.body.age_preference,
-				sexPref: req.body.sex_pref,
-				age: age,
-				bio: req.body.bio,
-				country: req.body.country,
-				province: req.body.province,
-				city: req.body.city,
-				lat: req.body.lat,
-				longitude: req.body.long,
-			};
+			userPost = [
+				{
+					username: req.body.username,
+					firstname: req.body.firstname,
+					lastname: req.body.lastname,
+					email: req.body.email,
+					gender: req.body.gender,
+					dob: req.body.birthdate,
+					agePref: req.body.age_preference,
+					sexPref: req.body.sex_pref,
+					age: age,
+					bio: req.body.bio,
+					country: req.body.country,
+					province: req.body.province,
+					city: req.body.city,
+					lat: req.body.lat,
+					longitude: req.body.long,
+				},
+				req.user.id,
+			];
 		}
 		if (
 			req.user.username !== req.body.username ||
@@ -772,29 +780,35 @@ exports.user_editProfile = (req, res, next) => {
 			req.user.lat !== req.body.lat ||
 			req.user.longitude !== req.body.long
 		) {
-			let userSql = "UPDATE users SET ?";
-			await conn.query(userSql, userPost, (err) => {
+			let userSql = "UPDATE users SET ? WHERE id=?";
+			conn.query(userSql, userPost, (err) => {
 				if (err) {
-					req.flash("error_msg", err);
+					req.flash("error_msg", err.message);
 					return res.status(500).redirect("/users/editProfile");
 				}
 
 				if (checkInterest(req.body.interests)) {
-					userPost = {
-						interest_1: req.body.interests[0],
-						interest_2: req.body.interests[1],
-						interest_3: req.body.interests[2],
-						interest_4: req.body.interests[3],
-						interest_5: req.body.interests[4],
-					};
+					userPost = [
+						{
+							interest_1: req.body.interests[0],
+							interest_2: req.body.interests[1],
+							interest_3: req.body.interests[2],
+							interest_4: req.body.interests[3],
+							interest_5: req.body.interests[4],
+						},
+						req.user.id,
+					];
 				} else {
-					userPost = {
-						interest_1: req.body.interests,
-						interest_2: null,
-						interest_3: null,
-						interest_4: null,
-						interest_5: null,
-					};
+					userPost = [
+						{
+							interest_1: req.body.interests,
+							interest_2: null,
+							interest_3: null,
+							interest_4: null,
+							interest_5: null,
+						},
+						req.user.id,
+					];
 				}
 
 				conn.query(userSql, userPost, (err) => {
