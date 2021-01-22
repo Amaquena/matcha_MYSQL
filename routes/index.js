@@ -146,23 +146,30 @@ router.get(
 		let likedByUsers = [];
 		let matchedUsers = [];
 
-		Likes.find({ user_username: user.username }, (err, likes) => {
+		conn.query("SELECT * FROM likes WHERE user_username=?", [user.username], (err, likes) => {
+			if (err) throw err;
 			likes.forEach((users) => {
 				likedUsers.push(users.liked_username);
 			});
-			Likes.find({ liked_username: user.username }, (err, currUserliked) => {
+			conn.query("SELECT * FROM likes WHERE liked_username=?", [user.username], (err, currUserliked) => {
+				if (err) throw err;
 				currUserliked.forEach((likedby) => {
 					likedByUsers.push(likedby.user_username);
 				});
 				matchedUsers = matches(likedByUsers, likedUsers);
-				User.find(
-					{ username: { $in: matchedUsers, $nin: user.blocked } },
-					(err, nonBlockedUsers) => {
-						res.locals.user = user;
-						res.locals.nonBlockedUsers = nonBlockedUsers;
-						next();
-					}
-				);
+				let blocked = JSON.stringify(user.blocked).split(",");
+				
+				let matchedUsersTokens = new Array(matchedUsers.length).fill('?').join(',');
+				let blockedTokens = new Array(blocked).fill('?').join(',');
+				let allUsers = matchedUsers.concat(blocked);
+
+				let userSql = `SELECT * FROM users WHERE username IN (${matchedUsersTokens}) AND username NOT IN (${blockedTokens})`;
+				conn.query(userSql, allUsers, (err, nonBlockedUsers) => {
+					if (err) throw err;
+					res.locals.user = user;
+					res.locals.nonBlockedUsers = nonBlockedUsers;
+					next();
+				});
 			});
 		});
 	},
@@ -171,35 +178,31 @@ router.get(
 		let user = res.locals.user;
 		let chatId = req.url.split("?", 2)[1];
 
-		Chat.find({
-			$and: [
-				{ $or: [{ to: user.username }, { from: user.username }] },
-				{ chatId: chatId },
-			],
-		})
-			.sort({ time: 1 })
-			.then((messages) => {
-				res.render("chats", {
-					user: user,
-					chatId: chatId,
-					messages: messages,
-					userNameTag: req.user.username,
-					nonBlockedUsers: nonBlockedUsers.map((nonBlockedUser) => {
-						return {
-							username: nonBlockedUser.username,
-							pp: nonBlockedUser.profileImages.image1,
-							lastSeen: nonBlockedUser.lastSeen,
-							loggedIn: nonBlockedUser.loggedIn,
-							bio: nonBlockedUser.bio,
-							request: {
-								url:
-									"/chats?" +
-									[user.username, nonBlockedUser.username].sort().join("-"),
-							},
-						};
-					}),
-				});
+		let chatSql = "SELECT * FROM chats WHERE (reciever=? OR sender=?) AND (chatid=?) ORDER BY time ASC";
+		let chatPost = [user.username, user.username, chatId];
+		conn.query(chatSql, chatPost, (err, messages) => {
+			if (err) throw err;
+			res.render("chats", {
+				user: user,
+				chatId: chatId,
+				messages: messages,
+				userNameTag: req.user.username,
+				nonBlockedUsers: nonBlockedUsers.map((nonBlockedUser) => {
+					return {
+						username: nonBlockedUser.username,
+						pp: nonBlockedUser.image_1,
+						lastSeen: nonBlockedUser.lastSeen,
+						loggedIn: nonBlockedUser.loggedIn,
+						bio: nonBlockedUser.bio,
+						request: {
+							url:
+								"/chats?" +
+								[user.username, nonBlockedUser.username].sort().join("-"),
+						},
+					};
+				}),
 			});
+		});
 	}
 );
 
