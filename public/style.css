@@ -68,3 +68,7 @@ textarea {
   position: relative; /* so .content can use position: absolute */
   padding: auto;
 }
+
+#mapid {
+    visibility: hidden;
+}

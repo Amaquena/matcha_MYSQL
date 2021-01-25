@@ -3,27 +3,40 @@ const router = express.Router();
 const { ensureAuthenticated } = require('../config/auth');
 const multer = require('multer');
 const storage = require('../config/fileStorage');
+const { getLocation } =  require('../config/locationData');
 const upload = multer({
 	storage: storage.storage,
 	limits: storage.limits,
 	fileFilter: storage.fileFilter,
 }).single('profileImage');
 
+
+
 // Render ejs view pages
 router.get('/login', (req, res) => res.render('login', {userNameTag: ''}));
 router.get('/register', (req, res) => res.render('register', {userNameTag: ''}));
 router.get('/resend', (req, res) => res.render('resend', {userNameTag: ''}));
 router.get('/updatePassword', (req, res) => res.render('updatePass', {id: req.user._id, userNameTag: ''}));
-router.get('/extendedProfile', ensureAuthenticated, (req, res) => {
+router.get('/extendedProfile', ensureAuthenticated, getLocation, (req, res) => {
     res.render('extendedProfile', {
+		country: res.locals.country,
+		city: res.locals.city,
+		lat: res.locals.lat,
+		long: res.locals.long,
+		province: res.locals.province,
         name: req.user.username,
         userNameTag: req.user.username
     });
 });
 router.get('/forgotPwd', (req, res) => res.render('forgotPwd', {userNameTag: ''}));
 router.get('/changePwd/:userToken', (req, res) => res.render('changePwd', { token: req.params.userToken, userNameTag: ''}));
-router.get('/editProfile', ensureAuthenticated, (req, res) => {
+router.get('/editProfile', ensureAuthenticated, getLocation, (req, res) => {
     res.render('editProfile', {
+		country: res.locals.country,
+		city: res.locals.city,
+		lat: res.locals.lat,
+		long: res.locals.long,
+		province: res.locals.province,
         name: req.user.username,
         firstname: req.user.firstname,
         lastname: req.user.lastname,

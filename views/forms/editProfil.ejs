@@ -169,16 +169,57 @@
 	<div class="form-group row">
 		<div class="offset-4 col-8">
 			<button name="submit" type="submit" class="btn btn-danger bg-danger">Submit</button><br><br>
+			<div style="height: 180px;" id="mapid"></div>
 		</div><br>
 		<span style="color: brown;">NOTE: Your location will automatically update when hitting submit.</span><br>
 	</div>
-	<input type="text" name="country" id="country" hidden>
-    <input type="text" name="province" id="province" hidden>
-    <input type="text" name="city" id="city" hidden>
-    <input type="text" name="lat" id="lat" hidden>
-    <input type="text" name="long" id="long" hidden>
+	<input type="text" name="country" value="<%= country %>" id="country" hidden>
+    <input type="text" name="province" value="<%= province %>" id="province" hidden>
+    <input type="text" name="city" value="<%= city %>" id="city" hidden>
+    <input type="text" name="lat" value="<%= lat %>" id="lat" hidden>
+	<input type="text" name="long" value="<%= long %>" id="long" hidden>
 </form>
 <script type="text/javascript">
+
+var p = null;
+// One-shot position request.
+	$(document).ready(function() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				position => {
+					p = position;
+					document.getElementById("mapid").style.visibility = "visible";
+				}
+			);
+		} else {
+            alert("Sorry, your browser does not support HTML5 geolocation.");
+		}
+	});
+	function updatePosition(position) {
+		p=position;
+	}
+
+		var mymap = L.map('mapid').setView([<%- lat %>, <%- long %>], 13);
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(mymap);
+		
+		mymap.on('click', onMapClick);
+		var popup = L.popup();
+		function onMapClick(e) {
+			navigator.geolocation.getCurrentPosition(updatePosition);
+			$.ajax({ url:'http://api.geonames.org/extendedFindNearbyJSON?lat='+e.latlng.lat+'&lng='+e.latlng.lng+'&username=matchaverify',
+			success: function(data){
+				var country = data.geonames[2].countryName;
+				var province = data.geonames[3].name;
+				var city = data.geonames[6].name;
+				$('.leaflet-popup-content').text(province+', '+country+', '+city);
+			}
+			});
+			popup.setLatLng(e.latlng).setContent('').openOn(mymap);
+		}
+
+
 	function maxSel(){
 		var box = document.getElementsByName('interests');
 		var i = 0;
@@ -213,7 +254,6 @@
 		interests.forEach(checkInterestBlocks);
 
 		function checkInterestBlocks(key) {
-			console.log(key);
 			if (document.getElementById("interests_0").value === key)
 				document.getElementById("interests_0").checked = true;
 			if (document.getElementById("interests_1").value === key)
@@ -239,18 +279,7 @@
 			if (document.getElementById("interests_11").value === key)
 				document.getElementById("interests_11").checked = true;
 		}
-	}, false)
-
-	$.getJSON('https://geolocation-db.com/json/')
-         .done (function(location) {
-            $('#country').val(location.country_name);
-            $('#province').val(location.state);
-            $('#city').val(location.city);
-            $('#lat').val(location.latitude);
-            $('#long').val(location.longitude);
-            $('#ip').val(location.IPv4);
-		 });
-		
+	}, false)		
 	
 	document.getElementById("inputfile").addEventListener("change", readFile);
     function readFile() {
