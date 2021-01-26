@@ -291,6 +291,7 @@ router.get("/suggestedMatchas", ensureAuthenticated, (req, res) => {
 			userNameTag: req.user.username,
 			userLat: req.user.lat,
 			userLong: req.user.longitude,
+			userFame: req.user.fame,
 			userInterest_1: req.user.interest_1,
 			userInterest_2: req.user.interest_2,
 			userInterest_3: req.user.interest_3,

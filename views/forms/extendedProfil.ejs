@@ -300,6 +300,8 @@
   </div>
   <div class="form-group row">
     <div class="offset-4 col-8">
+		<span id="note-span" style="color: brown;">NOTE: Your location will automatically update with your current location when hitting submit.</span><br>
+		<div id="mapid-extendedProfile"></div><br>
       <button name="submit" type="submit" class="btn btn-danger bg-danger">
         Submit
       </button>
@@ -314,6 +316,46 @@
   <input type="text" name="gender2" value="both" hidden />
 </form>
 <script type="text/javascript">
+
+
+$(document).ready(function() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				position => {
+					document.getElementById("mapid-extendedProfile").style.visibility = "visible";
+				}
+			);
+		} else {
+            alert("Sorry, your browser does not support HTML5 geolocation.");
+		}
+	});
+		var mymap = L.map('mapid-extendedProfile').setView([<%- lat %>, <%- long %>], 13);
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(mymap);
+		
+		mymap.on('click', onMapClick);
+		var popup = L.popup();
+		function onMapClick(e) {
+			var country;
+			var province;
+			var city;
+			$.ajax({ url:'http://api.geonames.org/extendedFindNearbyJSON?lat='+e.latlng.lat+'&lng='+e.latlng.lng+'&username=matchaverify',
+			success: function(data){
+				country = data.geonames[2].countryName;
+				province = data.geonames[3].name;
+				city = data.geonames[6].name;
+				$('.leaflet-popup-content').text(country+', '+province+', '+city);
+				document.getElementById("country").value = country;
+				document.getElementById("province").value = province;
+				document.getElementById("city").value = city;
+				document.getElementById("lat").value = e.latlng.lat;
+				document.getElementById("long").value = e.latlng.lng;
+			}
+			});
+			popup.setLatLng(e.latlng).setContent('').openOn(mymap);
+		}
+
   function maxSel() {
     var box = document.getElementsByName("interests");
     var i = 0;

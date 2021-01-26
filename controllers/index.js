@@ -93,36 +93,51 @@ exports.index_profile = (req, res, next) => {
 							if (index > -1) {
 								blocked.splice(index, 1);
 							}
-							let likedbyString = likedby.join().replace(/['"]+/g, '');
-							let blockedString = blocked.join().replace(/['"]+/g, '');
+							let likedbyString = likedby.join().replace(/['"]+/g, "");
+							let blockedString = blocked.join().replace(/['"]+/g, "");
 							let userPost = [likedbyString, blockedString, updateLikes, id];
-							conn.query("UPDATE users SET likedby=?, blocked=?, likes=? WHERE id=?", userPost, (err) => {
-								if (err) throw err;
-								
-								conn.query("SELECT blocked FROM users WHERE id=?", [currUser.id], (err, currentUserDoc) => {
+							conn.query(
+								"UPDATE users SET likedby=?, blocked=?, likes=? WHERE id=?",
+								userPost,
+								(err) => {
 									if (err) throw err;
-									blocked = JSON.stringify(currentUserDoc[0].blocked).split(",");
-									const index = blocked.indexOf(doc[0].username);
-									if (index > -1) {
-										blocked.splice(index, 1);
-									}
-									blockedString = blocked.join();
-									conn.query("UPDATE users SET blocked=? WHERE id=?", [blockedString, currUser.id], (err) => {
-										if (err) throw err;
 
-										let likesSql = "INSERT INTO likes SET ?";
-										let likesPost = {
-											userId: currUser.id,
-											likedId: id,
-											user_username: currUser.username,
-											liked_username: doc[0].username,};
-										conn.query(likesSql, likesPost, (err) => {
+									conn.query(
+										"SELECT blocked FROM users WHERE id=?",
+										[currUser.id],
+										(err, currentUserDoc) => {
 											if (err) throw err;
-											res.redirect("/profiles/" + id);
-										});
-									});
-								});
-							});
+											blocked = JSON.stringify(currentUserDoc[0].blocked).split(
+												","
+											);
+											const index = blocked.indexOf(doc[0].username);
+											if (index > -1) {
+												blocked.splice(index, 1);
+											}
+											blockedString = blocked.join();
+											conn.query(
+												"UPDATE users SET blocked=? WHERE id=?",
+												[blockedString, currUser.id],
+												(err) => {
+													if (err) throw err;
+
+													let likesSql = "INSERT INTO likes SET ?";
+													let likesPost = {
+														userId: currUser.id,
+														likedId: id,
+														user_username: currUser.username,
+														liked_username: doc[0].username,
+													};
+													conn.query(likesSql, likesPost, (err) => {
+														if (err) throw err;
+														res.redirect("/profiles/" + id);
+													});
+												}
+											);
+										}
+									);
+								}
+							);
 						}
 					}
 				);
@@ -163,31 +178,47 @@ exports.index_profile = (req, res, next) => {
 					likedby.splice(index, 1);
 				}
 
-				let likedbyString = likedby.join().replace(/['"]+/g, '');
-				let blockedString = blocked.join().replace(/['"]+/g, '');
+				let likedbyString = likedby.join().replace(/['"]+/g, "");
+				let blockedString = blocked.join().replace(/['"]+/g, "");
 				let userPost = [likedbyString, blockedString, userLikes, id];
-				conn.query("UPDATE users SET likedby=?, blocked=?, likes=? WHERE id=?", userPost, (err) => {
-					if (err) throw err;
+				conn.query(
+					"UPDATE users SET likedby=?, blocked=?, likes=? WHERE id=?",
+					userPost,
+					(err) => {
+						if (err) throw err;
 
-					conn.query("SELECT * FROM users WHERE id=?", [currUser.id], (err, rows) => {
-						blocked = [];
-						if (rows[0].blocked != null) {
-							blocked = JSON.stringify(rows[0].blocked).split(",");
-						}
-						blocked.push(userRows[0].username);
-						blockedString = blocked.join().replace(/['"]+/g, '');
+						conn.query(
+							"SELECT * FROM users WHERE id=?",
+							[currUser.id],
+							(err, rows) => {
+								blocked = [];
+								if (rows[0].blocked != null) {
+									blocked = JSON.stringify(rows[0].blocked).split(",");
+								}
+								blocked.push(userRows[0].username);
+								blockedString = blocked.join().replace(/['"]+/g, "");
 
-						userPost = [blockedString, currUser.id];
-						conn.query("UPDATE users SET blocked=? WHERE id=?", userPost, (err) => {
-							if (err) throw err;
+								userPost = [blockedString, currUser.id];
+								conn.query(
+									"UPDATE users SET blocked=? WHERE id=?",
+									userPost,
+									(err) => {
+										if (err) throw err;
 
-							conn.query("DELETE FROM likes WHERE user_username=? AND liked_username=?", [currUser.username, userRows[0].username], (err) => {
-								if (err) throw err;
-								res.redirect("/profiles/" + id);
-							});
-						});
-					});
-				});
+										conn.query(
+											"DELETE FROM likes WHERE user_username=? AND liked_username=?",
+											[currUser.username, userRows[0].username],
+											(err) => {
+												if (err) throw err;
+												res.redirect("/profiles/" + id);
+											}
+										);
+									}
+								);
+							}
+						);
+					}
+				);
 			} else {
 				res.redirect("/profiles/" + id);
 			}
@@ -243,8 +274,8 @@ exports.index_advancedMathas = (req, res) => {
 
 		let ageMin;
 		let ageMax;
-		let userSql = "SELECT * FROM users WHERE";
-		let userPost = "";
+		let userSql = "SELECT * FROM users WHERE username <> ?";
+		let userPost = [req.user.username];
 
 		switch (agePref) {
 			case "age1":
@@ -279,58 +310,47 @@ exports.index_advancedMathas = (req, res) => {
 				ageMax = 66;
 				ageMin = 18;
 		}
-		userSql += " (age BETWEEN ? AND ?) AND";
-		userPost = [ageMin, ageMax];
+		userSql += " AND (age BETWEEN ? AND ?)";
+		userPost = userPost.concat([ageMin, ageMax]);
 
 		let fameRangeArray = fameRange.split("-");
-		userSql += " (fame BETWEEN ? AND ?) AND";
-		userPost = [ageMin, ageMax, fameRangeArray[0], fameRangeArray[1]];
+		userSql += " AND (fame BETWEEN ? AND ?)";
+		userPost = userPost.concat([fameRangeArray[0], fameRangeArray[1]]);
 
 		let location;
-		switch (loc) {
-			case "near":
-				location = req.user.city;
-				userSql += " (city = ?) AND";
-				break;
-			case "far":
-				location = req.user.province;
-				userSql += " (province = ?) AND";
-				break;
-			case "any":
-				location = req.user.country;
-				userSql += " (country = ?) AND";
-				break;
-			default:
-				location = null;
+		if (loc.length > 0) {
+			switch (loc) {
+				case "near":
+					location = req.user.city;
+					userSql += " AND (city = ?)";
+					break;
+				case "far":
+					location = req.user.province;
+					userSql += " AND (province = ?)";
+					break;
+				case "any":
+					location = req.user.country;
+					userSql += " AND (country = ?)";
+					break;
+				default:
+				// location = null;
+			}
+			userPost = userPost.concat([location]);
 		}
-		userPost = [ageMin, ageMax, fameRangeArray[0], fameRangeArray[1], location];
 
 		userSql +=
-			" (gender = ? && gender = 'male' OR gender = ? && gender = 'female' OR gender2 = ?)";
-		userPost = [
-			ageMin,
-			ageMax,
-			fameRangeArray[0],
-			fameRangeArray[1],
-			location,
+			" AND ((gender = ? && gender = 'male') OR (gender = ? && gender = 'female') OR gender2 = ?)";
+		userPost = userPost.concat([
 			req.user.sexPref,
 			req.user.sexPref,
 			req.user.sexPref,
-		];
+		]);
 
 		if (typeof interests !== "undefined") {
 			if (Array.isArray(interests)) {
 				userSql +=
-					" AND (interest_1 IN (?, ?, ?, ?, ?) OR interest_2 IN (?, ?, ?, ?, ?) OR interest_3 IN (?, ?, ?, ?, ?) OR interest_4 IN (?, ?, ?, ?, ?) OR interest_5 IN (?, ?, ?, ?, ?))";
-				userPost = [
-					ageMin,
-					ageMax,
-					fameRangeArray[0],
-					fameRangeArray[1],
-					location,
-					req.user.sexPref,
-					req.user.sexPref,
-					req.user.sexPref,
+					" OR (interest_1 IN (?, ?, ?, ?, ?) OR interest_2 IN (?, ?, ?, ?, ?) OR interest_3 IN (?, ?, ?, ?, ?) OR interest_4 IN (?, ?, ?, ?, ?) OR interest_5 IN (?, ?, ?, ?, ?))";
+				userPost = userPost.concat([
 					interests[0],
 					interests[1],
 					interests[2],
@@ -356,25 +376,17 @@ exports.index_advancedMathas = (req, res) => {
 					interests[2],
 					interests[3],
 					interests[4],
-				];
+				]);
 			} else {
 				userSql +=
 					" AND (interest_1 = ?) OR (interest_2 = ?) OR (interest_3 = ?) OR (interest_4 = ?) OR (interest_5 = ?)";
-				userPost = [
-					ageMin,
-					ageMax,
-					fameRangeArray[0],
-					fameRangeArray[1],
-					location,
-					req.user.sexPref,
-					req.user.sexPref,
-					req.user.sexPref,
+				userPost = userPost.concat([
 					interests,
 					interests,
 					interests,
 					interests,
 					interests,
-				];
+				]);
 			}
 		} else {
 			// Leave it empty becuase none was selected.
@@ -385,6 +397,7 @@ exports.index_advancedMathas = (req, res) => {
 			res.status(200).render("suggestedMatchas", {
 				userNameTag: req.user.username,
 				userLat: req.user.lat,
+				userFame: req.user.fame,
 				userLong: req.user.longitude,
 				userInterest_1: req.user.interest_1,
 				userInterest_2: req.user.interest_2,

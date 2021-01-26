@@ -69,6 +69,7 @@ textarea {
   padding: auto;
 }
 
-#mapid {
-    visibility: hidden;
+#mapid, #mapid-extendedProfile{
+	visibility: hidden;
+	height: 200px;
 }
