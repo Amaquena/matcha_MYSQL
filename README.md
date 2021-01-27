@@ -137,5 +137,5 @@ Matcha marking sheet can be found [here](https://github.com/wethinkcode-students
         - user's password is encrypted
 
 ## Contributors
-@ktrout @Deathshadowown
+[@ktrout17](https://github.com/ktrout17) [@Deathshadowown](https://github.com/Deathshadowown)
 ## Final Mark 96/125
