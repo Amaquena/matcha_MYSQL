@@ -5,7 +5,6 @@ Matcha is an online dating website that allows users to connect with others base
 - NodeJS
 - JavaScript
 - Bootstrap
-- npm package manager
 
 ## Installation
 ###### Download the source code
