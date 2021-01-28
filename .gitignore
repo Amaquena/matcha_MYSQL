@@ -3,3 +3,4 @@ public/style/
 .idea
 npm-debug.log
 .env
+uploads/
