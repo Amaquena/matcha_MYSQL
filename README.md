@@ -67,9 +67,9 @@ Matcha is an online dating website that allows users to connect with others base
 ## Testing
 Matcha marking sheet can be found [here](https://github.com/wethinkcode-students/web/blob/master/2%20-%20matcha/matcha.markingsheet.pdf)
 ###### Tests to be conducted & expected outcomes:
-1. **Launch the webserver***
+1. **Launch the webserver**
     - Server is launched without any errors
-2. ***User account creation***
+2. **User account creation**
     - Navigating to the sign-up page, you should be able to sign-up, enter credentials and receive an email 
     - Required fields are:
         - username
@@ -77,11 +77,11 @@ Matcha marking sheet can be found [here](https://github.com/wethinkcode-students
         - last name
         - secure password
         - valid email address
-3. ***User login***
+3. **User login**
     - Navigating to the login page, you should be able to login using the credentials created
     - User should be able to request a new password via email if forgotten
     - Disconnection is possible from any page
-4. ***Extended Profile***
+4. **Extended Profile**
     - Contains the following fields:
         - gender
         - sexual orientation (bisexual if left blank)
@@ -90,56 +90,56 @@ Matcha marking sheet can be found [here](https://github.com/wethinkcode-students
         - images (maximum five, including one used as a profile photo)
     - Is modifiable
     - Once filled in, advanced search is available
-5. ***Profile Proposals***
+5. **Profile Proposals**
     - List of profile suggestions is available once extended profile is completed
     - Suggestions based off sexual orientation
     - Weighted according to
         - same geographical area
         - max common interests
         - max popularity
-6. ***Advanced Search***
+6. **Advanced Search**
     - User can search based on:
         - age range
         - popularity score range
         - one or more tags of interest
-7. ***Sorting & filters***
+7. **Sorting & filters**
     - Profile proposals & Advanced Search Results are sortable & filterable by:
         - age
         - location
         - popularity
         - tags
-8. ***Geolocation***
+8. **Geolocation**
     - User is geolocated regardless of whether they want to be or not 
     - User can manually enter location
-9. ***Popularity Rating***
+9. **Popularity Rating**
     - Each user has a popularity scored based on views & likes
-10. ***Notifications***
+10. **Notifications**
     - User is notified in real-time of the following events:
         - a 'like' of their profile
         - someone has viewed their profile
         - a user 'liked' has 'liked' in return
         - a user does not 'like' the current user anymore
-11. ***Consultations***
+11. **Consultations**
     - User is able to consult people who have viewed their profile
     - History of profile visits & likes
-12. ***Profiles of other users***
+12. **Profiles of other users**
     - Public profile of user containes all info they have provided except email and password
     - Displays popularity & connection status/last seen
     - Shows if the user has 'liked' the current user
-13. ***User Actions***
+13. **User Actions**
     - User can 'like' & 'unlike' another user
     - When two users have both 'liked' each other, chat system is available
     - User who does not have a profile photo cannot 'like' another user
-14. ***Postponement & Blocking***
+14. **Postponement & Blocking**
     - User can be blocked if suspected of being a false account
     - Blocked user no longer appears in search results or suggestions & no notifications are generated
-15. ***Chat***
+15. **Chat**
     - Two logged in users who have 'liked' each other can chat in real-time
     - User can see from any page if a message was recieved
-16. ***UI/UX***
+16. **UI/UX**
     - App is compatible on Firefox & Chrome
     - Mobile layout does not have elements that overlap
-17. ***Security***
+17. **Security**
     - PHPMyAdmin:
         - user's password is encrypted
 
