@@ -239,6 +239,7 @@ exports.index_advancedMathas = (req, res) => {
 				userNameTag: req.user.username,
 				userLat: req.user.lat,
 				userLong: req.user.longitude,
+				userFame: req.user.fame,
 				userInterest_1: req.user.interest_1,
 				userInterest_2: req.user.interest_2,
 				userInterest_3: req.user.interest_3,
@@ -391,6 +392,9 @@ exports.index_advancedMathas = (req, res) => {
 		} else {
 			// Leave it empty becuase none was selected.
 		}
+
+		userSql += " AND (id <> ?)";
+		userPost = userPost.concat([req.user.id]);
 
 		conn.query(userSql, userPost, (err, rows) => {
 			if (err) throw err;
