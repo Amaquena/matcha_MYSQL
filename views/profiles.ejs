@@ -18,7 +18,7 @@
                     <div class="media-body text-white text-center mb-auto mt-3 wrapper">
                         <h1 class="mt-0 mb-0 text-center"><%= user.username %></h1><br>
                         <p class="small mb-4 text-center"> <i class="fa fa-map-marker mr-2"></i><%= user.city %> <%= user.province %> <%= user.country %></p>
-                        <% if(user.loggedIn === true) { %>
+                        <% if(user.loggedIn === 1) { %>
                             <p style="color: rgb(14, 112, 37);"> online </p>
                         <% } else { %>
                             <p>Last seen: <%= user.lastSeen %></p>
@@ -46,7 +46,7 @@
                 <hr class="mt-2 mb-3">
                 <p class="font-weight-light"><span class="text-danger">Gender</span> : <%= user.gender%></p>
                 <p class="font-weight-light"><span class="text-danger">Sexual Preference</span> : <%= user.sexPref%></p>
-                <p class="font-weight-light"><span class="text-danger">Interests</span> : <%= user.interest_1 %> <%= user.interest_2 %> <%= user.interests_3 %> <%= user.interests_4 %> <%= user.interests_5 %></p>
+                <p class="font-weight-light"><span class="text-danger">Interests</span> : <%= user.interest_1 %> <%= user.interest_2 %> <%= user.interest_3 %> <%= user.interest_4 %> <%= user.interest_5 %></p>
                 <p class="font-weight-light"><span class="text-danger">Age</span> : <%= user.age%></p>
                 <p class="font-weight-light"><span class="text-danger">Bio</span> : <%= user.bio%></p>
                 <p class="font-weight-light"><span class="text-danger">Fame Rating</span> : <%= user.fame %></p>

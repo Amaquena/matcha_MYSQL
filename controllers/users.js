@@ -188,17 +188,9 @@ exports.user_login = (req, res, next) => {
 				num = (user.likes / user.views) * 5;
 				fame = Math.round(num * 10) / 10;
 
-				// User.findByIdAndUpdate(
-				// 	user.id,
-				// 	{ $set: { fame: fame, loggedIn: true } },
-				// 	{ new: true },
-				// 	(err) => {
-				// 		if (err) return console.log(err);
-				// 	}
-				// );
 			}
 			let userSql = "UPDATE users SET fame=?, loggedIn=? WHERE id=?";
-			let userPost = [fame, true, req.user.id];
+			let userPost = [fame, 1, req.user.id];
 			conn.query(userSql, userPost, (err) => {
 				if (err) return console.log(err);
 				return res.redirect("/dashboard");
@@ -209,7 +201,7 @@ exports.user_login = (req, res, next) => {
 
 exports.user_logout = (req, res) => {
 	let time = getDateTime();
-	let userPost = [false, time, req.user.id];
+	let userPost = [0, time, req.user.id];
 	let userSql = "UPDATE users SET loggedIn=?, lastseen=? WHERE id=?";
 
 	conn.query(userSql, userPost, (err, rows) => {
