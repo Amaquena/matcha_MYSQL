@@ -8,7 +8,7 @@ Matcha is an online dating website that allows users to connect with others base
 
 ## Installation
 ###### Download the source code
-- ```[https://github.com/Amaquena/matcha_MYSQL](https://github.com/Amaquena/matcha_MYSQL)```
+- [```https://github.com/Amaquena/matcha_MYSQL```](https://github.com/Amaquena/matcha_MYSQL)
 - Once the source code is downloaded, navigate to the cloned folder in VSCode
 - Download NodeJS [here](https://nodejs.org/en/download/) and install it
 - Open a new terminal in VSCode and run ```npm install``` to install all the necessary modules needed to run the project
