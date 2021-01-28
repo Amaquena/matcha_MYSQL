@@ -35,9 +35,9 @@ let createUserTable = `CREATE TABLE IF NOT EXISTS users (
 	lat varchar(255),
 	longitude varchar(255),
 	gender2 TINYTEXT,
-	likedby MEDIUMTEXT NOT NULL,
-	blocked MEDIUMTEXT NOT NULL,
-	viewedby MEDIUMTEXT NOT NULL,
+	likedby MEDIUMTEXT,
+	blocked MEDIUMTEXT,
+	viewedby MEDIUMTEXT,
 	loggedIn boolean,
 	lastSeen TINYTEXT
 );`;
