@@ -1,14 +1,8 @@
 const express = require("express");
 const router = express.Router();
-// const User = require("../models/User");
-// const Chat = require("../models/Chats");
-// const Likes = require("../models/Likes");
-// const Views = require("../models/Views");
 const { ensureAuthenticated } = require("../config/auth");
 const multer = require("multer");
-// const mongoose = require("mongoose");
 const conn = require("../config/keys").MYSQL_CONNECTION;
-const dummyData = require("../faker");
 const storage = require("../config/fileStorage");
 const upload = multer({
 	storage: storage.storage,
@@ -19,7 +13,6 @@ const upload = multer({
 // Render ejs view pages
 router.get("/", (req, res) => {
 	res.setHeader("Content-Type", "text/html");
-	//dummyData.fake();
 	res.render("welcome", { userNameTag: "" });
 });
 

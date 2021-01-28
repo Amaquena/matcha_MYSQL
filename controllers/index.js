@@ -1,10 +1,5 @@
 const multer = require("multer");
-const crypto = require("crypto-extra");
-// const User = require("../models/User");
-// const Likes = require("../models/Likes");
 const conn = require("../config/keys").MYSQL_CONNECTION;
-const Chats = require("../models/Chats");
-// const { connect } = require("../app");
 
 exports.index_dashboard = (req, res, next) => {
 	let uploads = res.locals.upload.fields([

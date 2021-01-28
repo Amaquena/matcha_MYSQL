@@ -1,6 +1,5 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
-// const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const session = require('express-session');
 const passport = require('passport');
@@ -18,10 +17,6 @@ app.use(favicon(__dirname + "/public/img/favicon.ico"));
 
 // Passport Config
 require('./config/passport')(passport);
-
-// Mongo DB config
-// const db = require('./config/keys').MongoURI;
-// mongoose.set('useCreateIndex', true);
 
 // MySQL DB config and connect
 const conn = require('./config/keys').MYSQL_CONNECTION;
@@ -43,11 +38,6 @@ conn.connect(error => {
 	tableCreation.createLikesTable(conn);
 	tableCreation.createChatsTable(conn);
   });
-
-// Connect to Mongo
-// mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
-// 	.then(() => console.log('MongoDb Connected... '))
-// 	.catch(err => console.log(err));
 
 // ejs
 app.use(expressLayouts);

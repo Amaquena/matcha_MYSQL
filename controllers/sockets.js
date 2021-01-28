@@ -1,6 +1,3 @@
-const User = require("../models/User");
-const Like = require("../models/Likes");
-const Chat = require("../models/Chats");
 const conn = require("../config/keys").MYSQL_CONNECTION;
 
 module.exports = function (io, connectedUsers) {
