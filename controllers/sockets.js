@@ -162,87 +162,6 @@ module.exports = function (io, connectedUsers) {
 					});
 				});
 			});
-			// Like.findOne(
-			// 	{ user_username: data.likedUser, liked_username: data.currUser },
-			// 	(err, likeDoc) => {
-			// 		if (err) throw err;
-					// Like.findOne(
-					// 	{ user_username: data.currUser, liked_username: data.likedUser },
-					// 	(err, isLiked) => {
-					// 		if (err) throw err;
-
-							// userIsLiked = 0;
-							// if (isLiked != null) {
-							// 	userIsLiked = 1;
-							// }
-
-							// User.findOne({ username: data.likedUser }, (err, doc) => {
-							// 	if (err) throw err;
-
-								// if (likeDoc) {
-								// 	let isBlocked = 0;
-
-								// 	if (typeof doc.blocked !== "undefined") {
-								// 		if (Array.isArray(doc.blocked)) {
-								// 			for (let i in doc.blocked) {
-								// 				const blockedUser = doc.blocked[i];
-								// 				if (blockedUser === data.currUser) {
-								// 					isBlocked = 1;
-								// 				}
-								// 			}
-								// 		}
-								// 	} else {
-								// 		if (doc.blocked === data.currUser) {
-								// 			isBlocked = 1;
-								// 		}
-								// 	}
-								// 	if (isBlocked == 0 && userIsLiked == 0) {
-								// 		for (var i in connectedUsers) {
-								// 			if (connectedUsers[i].user === data.likedUser) {
-								// 				io.to(connectedUsers[i].socketId).emit("notification", {
-								// 					user: data.currUser,
-								// 					msg: "You have a new match with",
-								// 					match: 2,
-								// 				});
-								// 			}
-								// 		}
-								// 	}
-								// } else {
-									// let isBlocked = 0;
-
-									// if (doc) {
-									// 	if (typeof doc.blocked !== "undefined") {
-									// 		if (Array.isArray(doc.blocked)) {
-									// 			for (let i in doc.blocked) {
-									// 				const blockedUser = doc.blocked[i];
-									// 				if (blockedUser === data.currUser) {
-									// 					isBlocked = 1;
-									// 				}
-									// 			}
-									// 		}
-									// 	} else {
-									// 		if (doc.blocked === data.currUser) {
-									// 			isBlocked = 1;
-									// 		}
-									// 	}
-									// }
-									// if (isBlocked == 0 && userIsLiked == 0) {
-									// 	for (var i in connectedUsers) {
-									// 		if (connectedUsers[i].user === data.likedUser) {
-									// 			io.to(connectedUsers[i].socketId).emit("notification", {
-									// 				user: data.currUser,
-									// 				msg: "Liked your profile",
-									// 				match: 1,
-									// 			});
-									// 		}
-									// 	}
-									// }
-								// }
-							// });
-						// }
-					// );
-				// }
-			// );
 		});
 
 		socket.on("block", (data) => {
@@ -271,13 +190,13 @@ module.exports = function (io, connectedUsers) {
 					}
 					viewedbyLength = viewedby.length;
 
-					for (var i = 0; i < viewedbyLength; i++) {
-						if (userDoc[0].viewedby[i] == data.currUser) {
+					for (let i = 0; i < viewedbyLength; i++) {
+						if (viewedby[i] == data.currUser) {
 							isViewed = 1;
 						}
 					}
 					if (isViewed == 0) {
-						for (var i in connectedUsers) {
+						for (let i in connectedUsers) {
 							if (connectedUsers[i].user === data.viewedUser) {
 								io.to(connectedUsers[i].socketId).emit("notification", {
 									user: data.currUser,

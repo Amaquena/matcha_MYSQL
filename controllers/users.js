@@ -670,7 +670,10 @@ exports.user_extendedProfile = (req, res) => {
 							gender2: req.body.gender2,
 							age: age,
 							extendedProf: true,
-							loggedIn: true
+							loggedIn: true,
+							likedby: "",
+							blocked: "",
+							viewedby: ""
 						};
 					}
 					let userSql = `UPDATE users SET ? WHERE id=${req.user.id}`;
