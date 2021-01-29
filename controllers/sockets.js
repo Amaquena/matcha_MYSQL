@@ -186,16 +186,11 @@ module.exports = function (io, connectedUsers) {
 					let viewedbyLength;
 
 					if (userDoc[0].viewedby != null) {
-						viewedby = JSON.stringify(userDoc[0].viewedby).split(",");
+						viewedby = userDoc[0].viewedby.split(",");
 					}
 					viewedbyLength = viewedby.length;
 
-					for (let i = 0; i < viewedbyLength; i++) {
-						if (viewedby[i] == data.currUser) {
-							isViewed = 1;
-						}
-					}
-					if (isViewed == 0) {
+					if (!viewedby.includes(data.currUser)) {
 						for (let i in connectedUsers) {
 							if (connectedUsers[i].user === data.viewedUser) {
 								io.to(connectedUsers[i].socketId).emit("notification", {

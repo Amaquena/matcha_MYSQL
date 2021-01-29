@@ -77,17 +77,17 @@ exports.index_profile = (req, res, next) => {
 							let updateLikes = doc[0].likes + 1;
 
 							if (doc[0].likedby != null) {
-								likedby = JSON.stringify(doc[0].likedby).split(",");
+								likedby = doc[0].likedby.split(",");
 							}
 							if (doc[0].blocked != null) {
-								blocked = JSON.stringify(doc[0].blocked).split(",");
+								blocked = doc[0].blocked.split(",");
+								const index = blocked.indexOf(currUser.username);
+								if (index > -1) {
+									blocked.splice(index, 1);
+								}
 							}
-
+							
 							likedby.push(currUser.username);
-							const index = blocked.indexOf(currUser.username);
-							if (index > -1) {
-								blocked.splice(index, 1);
-							}
 							let likedbyString = likedby.join().replace(/['"]+/g, "");
 							let blockedString = blocked.join().replace(/['"]+/g, "");
 							let userPost = [likedbyString, blockedString, updateLikes, id];
@@ -98,18 +98,19 @@ exports.index_profile = (req, res, next) => {
 									if (err) throw err;
 
 									conn.query(
-										"SELECT blocked FROM users WHERE id=?",
+										"SELECT * FROM users WHERE id=?",
 										[currUser.id],
 										(err, currentUserDoc) => {
 											if (err) throw err;
-											blocked = JSON.stringify(currentUserDoc[0].blocked).split(
-												","
-											);
-											const index = blocked.indexOf(doc[0].username);
-											if (index > -1) {
-												blocked.splice(index, 1);
+
+											if (currentUserDoc[0].blocked != null) {
+												blocked = currentUserDoc[0].blocked.split(",");
+												const index = blocked.indexOf(doc[0].username);
+												if (index > -1) {
+													blocked.splice(index, 1);
+												}
 											}
-											blockedString = blocked.join();
+											blockedString = blocked.join().replace(/['"]+/g, "");
 											conn.query(
 												"UPDATE users SET blocked=? WHERE id=?",
 												[blockedString, currUser.id],
@@ -148,25 +149,25 @@ exports.index_profile = (req, res, next) => {
 
 			let blocked = [];
 			let likedby = [];
-			let userLikes;
+			let userLikes = 0;
 
 			if (userRows[0].blocked != null) {
-				blocked = JSON.stringify(userRows[0].blocked).split(",");
+				blocked = userRows[0].blocked.split(",");
 			}
-			for (const i in blocked) {
-				if (blocked.hasOwnProperty(i)) {
-					blockedUser = true;
-				}
-			}
+			// for (const i in blocked) {
+			// 	if (blocked.includes(userRows[0].username)) {
+			// 		blockedUser = true;
+			// 	}
+			// }
 
-			if (!blockedUser) {
+			if (!blocked.includes(currUser.username)) {
 				if (userRows[0].likes > 0) {
 					userLikes = userRows[0].likes - 1;
 				}
 				blocked.push(currUser.username);
 
 				if (userRows[0].likedby != null) {
-					likedby = JSON.stringify(userRows[0].likedby).split(",");
+					likedby = userRows[0].likedby.split(",");
 				}
 				const index = likedby.indexOf(currUser.username);
 				if (index > -1) {
@@ -188,7 +189,7 @@ exports.index_profile = (req, res, next) => {
 							(err, rows) => {
 								blocked = [];
 								if (rows[0].blocked != null) {
-									blocked = JSON.stringify(rows[0].blocked).split(",");
+									blocked = rows[0].blocked.split(",");
 								}
 								blocked.push(userRows[0].username);
 								blockedString = blocked.join().replace(/['"]+/g, "");

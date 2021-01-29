@@ -79,8 +79,8 @@ router.get("/profiles/:id", ensureAuthenticated, (req, res, next) => {
 									(err, userRows) => {
 										let viewCount = userRows[0].views + 1;
 										conn.query(
-											"UPDATE users SET views=?",
-											[viewCount],
+											"UPDATE users SET views=? WHERE id=?",
+											[viewCount, id],
 											(err) => {
 												if (err) throw err;
 
